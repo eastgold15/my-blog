@@ -9,7 +9,7 @@ export const config = {
     repo: process.env.NEXT_PUBLIC_GITHUB_REPO || "knowledge_base",
     branch: process.env.NEXT_PUBLIC_GITHUB_BRANCH || "master",
     apiBaseUrl: "https://api.github.com",
-    githubToken: process.env.GITHUB_TOKEN || "",
+    githubToken: process.env.MY_GITHUB_TOKEN || "",
   },
   blog: {
     title: "我的博客",
