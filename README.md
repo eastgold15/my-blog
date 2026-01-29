@@ -2,9 +2,12 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 # 我的全栈博客
 
-[![Deploy with Vercel](https://vercelbadge.v2.vercel.app/api/eastgold15/my-blog)](https://my-blog-phi-steel.vercel.app)
+[![Vercel Deployment](https://vercel.com/button)](https://my-blog-phi-steel.vercel.app)
 
 ![Deploy to GitHub Pages](https://github.com/eastgold15/my-blog/actions/workflows/deploy.yml/badge.svg)
+
+
+
 ## Getting Started
 
 First, run the development server:
