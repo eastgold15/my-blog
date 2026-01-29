@@ -1,25 +1,41 @@
 name: Deploy to GitHub Pages
+
 on:
   # 触发条件：当推送到 main 分支时
   push:
     branches: ["main"] # 监听 main 分支的提交
+
 permissions:
   contents: read
   pages: write
   id-token: write
+
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: oven-sh/setup-bun@v1
         with:
           bun-version: latest
-      - run: bun install
-      - run: bun run build
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Build blog
+        run: bun run build
+        env:
+          # 传递环境变量给构建过程
+          NEXT_PUBLIC_GITHUB_OWNER: ${{ vars.NEXT_PUBLIC_GITHUB_OWNER || 'SCUJJ-OSIG' }}
+          NEXT_PUBLIC_GITHUB_REPO: ${{ vars.NEXT_PUBLIC_GITHUB_REPO || 'knowledge_base' }}
+          NEXT_PUBLIC_GITHUB_BRANCH: ${{ vars.NEXT_PUBLIC_GITHUB_BRANCH || 'master' }}
+          BLOG_GITHUB_TOKEN: ${{ secrets.BLOG_GITHUB_TOKEN }}
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./out # Next.js 静态导出的默认目录
+
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v4

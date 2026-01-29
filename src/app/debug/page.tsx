@@ -88,7 +88,7 @@ export default async function DebugPage() {
             <p><strong>Owner:</strong> {process.env.NEXT_PUBLIC_GITHUB_OWNER}</p>
             <p><strong>Repo:</strong> {process.env.NEXT_PUBLIC_GITHUB_REPO}</p>
             <p><strong>Branch:</strong> {process.env.NEXT_PUBLIC_GITHUB_BRANCH}</p>
-            <p><strong>Has Token:</strong> {process.env.MY_GITHUB_TOKEN ? "是 (已设置)" : "否 (未设置)"}</p>
+            <p><strong>Has Token:</strong> {process.env.BLOG_GITHUB_TOKEN ? "是 (已设置)" : "否 (未设置)"}</p>
           </div>
         </section>
 
