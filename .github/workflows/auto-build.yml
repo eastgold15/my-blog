@@ -1,0 +1,43 @@
+name: Build on Knowledge Base Update
+
+on:
+  # 当 Obsidian 知识库仓库有更新时触发
+  repository_dispatch:
+    types: [build]
+  workflow_dispatch:
+  # 可选：定时构建（每小时）
+  schedule:
+    - cron: '0 * * * *'
+  # 可选：监听知识库仓库的推送（需要添加 token）
+  push:
+    paths:
+      - '**.md'
+      - '**.mdx'
+    branches: ["master"]
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Build blog
+        run: bun run build
+        env:
+          # 确保使用正确的 GitHub Token
+          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./out
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
