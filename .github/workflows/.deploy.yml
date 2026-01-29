@@ -1,5 +1,6 @@
 name: Deploy to GitHub Pages
 on:
+  # 触发条件：当推送到 main 分支时
   push:
     branches: ["main"] # 监听 main 分支的提交
 permissions:
@@ -11,7 +12,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v1 # 使用你喜欢的 Bun
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
       - run: bun install
       - run: bun run build
       - name: Upload artifact
