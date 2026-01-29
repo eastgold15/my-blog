@@ -1,0 +1,22 @@
+name: Deploy to GitHub Pages
+on:
+  push:
+    branches: ["main"] # 监听 main 分支的提交
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v1 # 使用你喜欢的 Bun
+      - run: bun install
+      - run: bun run build
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./out # Next.js 静态导出的默认目录
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
