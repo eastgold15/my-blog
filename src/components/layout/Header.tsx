@@ -30,7 +30,6 @@ export function Header({ navItems }: HeaderProps) {
             {navItems.map((item) => (
               <NavItem item={item} key={item.slug} />
             ))}
-            <NavLink href="/software">软件推荐</NavLink>
           </nav>
         </div>
       </div>
