@@ -3,6 +3,8 @@
  * 从 Markdown 内容中提取标题，生成目录结构
  */
 
+import GithubSlugger from "github-slugger";
+
 export interface TocItem {
   /** 子目录项 */
   children?: TocItem[];
@@ -16,10 +18,11 @@ export interface TocItem {
 
 /**
  * 从 Markdown 内容生成目录
+ * 使用 github-slugger 生成与 GitHub 一致的 ID
  */
 export function generateTOC(content: string): TocItem[] {
   const headings: TocItem[] = [];
-  const idCount = new Map<string, number>(); // 记录每个 ID 出现的次数
+  const slugger = new GithubSlugger();
 
   // 匹配 Markdown 标题 # ## ### 等
   const headingRegex = /^(#{1,6})\s+(.+)$/gm;
@@ -28,20 +31,13 @@ export function generateTOC(content: string): TocItem[] {
     const level = match[1].length;
     const title = match[2].trim();
 
-    // 生成 ID（与 ReactMarkdown 生成的 ID 保持一致）
-    let id = generateAnchorId(title);
-
-    // 如果 ID 为空（标题只包含特殊字符），使用时间戳作为后备
-    if (!id) {
-      id = `heading-${Date.now()}-${headings.length}`;
+    // 跳过空标题
+    if (!title) {
+      continue;
     }
 
-    // 如果 ID 已存在，添加计数后缀
-    const count = idCount.get(id) || 0;
-    if (count > 0) {
-      id = `${id}-${count}`;
-    }
-    idCount.set(id, count + 1);
+    // 使用 github-slugger 生成 ID（会自动处理重复）
+    const id = slugger.slug(title);
 
     headings.push({
       title,
@@ -53,19 +49,6 @@ export function generateTOC(content: string): TocItem[] {
 
   // 构建层级结构
   return buildHierarchy(headings);
-}
-
-/**
- * 从标题文本生成锚点 ID
- * 与 react-markdown 的 rehype-slug 行为保持一致
- */
-function generateAnchorId(title: string): string {
-  return title
-    .toLowerCase()
-    .replace(/\s+/g, "-")
-    .replace(/[^\w\-一 - 龥]/g, "")
-    .replace(/--+/g, "-")
-    .replace(/^-|-$/g, "");
 }
 
 /**
