@@ -4,6 +4,7 @@
  */
 
 import { config } from "@/configs/config";
+import type { NavItem } from "@/types/navigation";
 import { ghFetch } from "./api";
 
 export interface GitHubFile {
@@ -32,6 +33,9 @@ export interface GitHubContent {
   content: string;
   encoding: string;
 }
+
+// 博客目录名称（可配置）
+const BLOG_DIR = "0-blog";
 
 // 获取文件列表
 export function getRepoFiles(path: string) {
@@ -104,4 +108,141 @@ export async function fetchAllMarkdownFiles(): Promise<
   }
 
   return results;
+}
+
+/**
+ * 构建导航树结构
+ * 根据 GitHub 仓库目录结构生成导航栏
+ */
+export async function buildNavigationTree(): Promise<NavItem[]> {
+  const tree = await getRepoTree();
+  const navItems: NavItem[] = [];
+
+  // 获取第一层目录
+  const firstLevelDirs = new Set<string>();
+
+  for (const item of tree) {
+    if (item.type === "tree") {
+      const parts = item.path.split("/");
+      // 只取第一层目录，跳过隐藏目录
+      if (parts.length === 1 && !parts[0].startsWith(".")) {
+        firstLevelDirs.add(parts[0]);
+      }
+    }
+  }
+
+  // 为每个第一层目录创建导航项
+  for (const dir of Array.from(firstLevelDirs).sort()) {
+    const navItem: NavItem = {
+      label: dir.replace(/^\d+-/, ""), // 移除数字前缀
+      slug: dir === BLOG_DIR ? "/posts" : `/${dir}`,
+      isBlog: dir === BLOG_DIR,
+      path: dir,
+      children: [],
+    };
+
+    // 获取子目录
+    const children = await getChildren(dir, tree);
+    if (children.length > 0) {
+      navItem.children = children;
+    }
+
+    navItems.push(navItem);
+  }
+
+  return navItems;
+}
+
+/**
+ * 获取目录的子项
+ */
+async function getChildren(
+  parentPath: string,
+  tree: GitHubTreeItem[]
+): Promise<NavItem[]> {
+  const children: NavItem[] = [];
+
+  for (const item of tree) {
+    if (item.type === "tree") {
+      const parts = item.path.split("/");
+      // 检查是否是直接子目录
+      if (parts.length === 2 && parts[0] === parentPath) {
+        const childName = parts[1];
+        // 跳过隐藏目录
+        if (childName.startsWith(".")) {
+          continue;
+        }
+
+        children.push({
+          label: childName.replace(/^\d+-/, ""),
+          slug: `/${item.path}`,
+          path: item.path,
+        });
+      }
+    }
+  }
+
+  return children.sort((a, b) => a.label.localeCompare(b.label));
+}
+
+/**
+ * 获取指定目录下的所有文件
+ */
+export async function getAllFilesInDir(dirPath: string): Promise<GitHubFile[]> {
+  const tree = await getRepoTree();
+  const files: GitHubFile[] = [];
+
+  for (const item of tree) {
+    if (
+      item.type === "blob" &&
+      item.path.startsWith(dirPath + "/") &&
+      (item.path.endsWith(".md") || item.path.endsWith(".mdx"))
+    ) {
+      // 跳过隐藏目录
+      if (item.path.split("/").some((part) => part.startsWith("."))) {
+        continue;
+      }
+
+      const parts = item.path.split("/");
+      files.push({
+        name: parts.at(-1) || item.path,
+        path: item.path,
+        type: "file",
+        size: item.size,
+        url: item.url,
+      });
+    }
+  }
+
+  return files;
+}
+
+/**
+ * 获取所有文件路径映射（用于双链解析）
+ * 返回：{ "文件名": "完整路径", ... }
+ */
+export async function getFilepathMap(): Promise<Map<string, string>> {
+  const tree = await getRepoTree();
+  const pathMap = new Map<string, string>();
+
+  for (const item of tree) {
+    if (
+      item.type === "blob" &&
+      (item.path.endsWith(".md") || item.path.endsWith(".mdx"))
+    ) {
+      // 跳过隐藏目录
+      if (item.path.split("/").some((part) => part.startsWith("."))) {
+        continue;
+      }
+
+      const parts = item.path.split("/");
+      const fileName = parts.at(-1)?.replace(/\.(md|mdx)$/, "") || "";
+
+      // 存储多个可能的 key 用于模糊匹配
+      pathMap.set(fileName, item.path); // 文件名
+      pathMap.set(item.path, item.path); // 完整路径
+    }
+  }
+
+  return pathMap;
 }
