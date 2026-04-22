@@ -88,17 +88,17 @@ export default async function PostPage({
 
   return (
     <div className="w-full px-4 py-12 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-[1600px]">
+      <div className="mx-auto w-full max-w-[1800px]">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
           {/* 左侧目录导航 - 只在桌面端显示 */}
           {toc.length > 0 && (
-            <aside className="hidden lg:col-span-3 lg:block">
+            <aside className="hidden lg:col-span-2 lg:block">
               <TableOfContents title="目录" toc={toc} />
             </aside>
           )}
 
           {/* 右侧文章内容 */}
-          <article className={`lg:col-span-${toc.length > 0 ? "9" : "12"}`}>
+          <article className="lg:col-span-10">
             {/* 返回首页链接 */}
             <Link
               className="mb-8 inline-flex items-center text-gray-600 text-sm transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
@@ -130,7 +130,7 @@ export default async function PostPage({
             </header>
 
             {/* 文章内容 */}
-            <div className="prose prose-lg dark:prose-invert markdown-body max-w-none">
+            <div className="markdown-body w-full">
               <ReactMarkdown
                 rehypePlugins={[rehypeHighlight, rehypeSlug]}
                 remarkPlugins={[remarkGfm]}
