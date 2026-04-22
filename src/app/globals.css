@@ -65,11 +65,11 @@ body {
 }
 
 .markdown-body pre {
-  @apply p-4 bg-gray-900 dark:bg-gray-950 rounded-lg overflow-x-auto mb-4;
+  @apply p-4 bg-gray-900 dark:bg-gray-950 rounded-lg overflow-x-auto mb-4 relative;
 }
 
 .markdown-body pre code {
-  @apply bg-transparent p-0 text-gray-100 dark:text-gray-100;
+  @apply bg-transparent p-0 text-gray-100 dark:text-gray-100 block;
 }
 
 .markdown-body ul,

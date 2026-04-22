@@ -19,6 +19,7 @@ export interface TocItem {
  */
 export function generateTOC(content: string): TocItem[] {
   const headings: TocItem[] = [];
+  const idCount = new Map<string, number>(); // 记录每个 ID 出现的次数
 
   // 匹配 Markdown 标题 # ## ### 等
   const headingRegex = /^(#{1,6})\s+(.+)$/gm;
@@ -28,7 +29,14 @@ export function generateTOC(content: string): TocItem[] {
     const title = match[2].trim();
 
     // 生成 ID（与 ReactMarkdown 生成的 ID 保持一致）
-    const id = generateAnchorId(title);
+    let id = generateAnchorId(title);
+
+    // 如果 ID 已存在，添加计数后缀
+    const count = idCount.get(id) || 0;
+    if (count > 0) {
+      id = `${id}-${count}`;
+    }
+    idCount.set(id, count + 1);
 
     headings.push({
       title,

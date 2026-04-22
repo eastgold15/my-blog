@@ -8,12 +8,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
-import rehypeSlug from "rehype-slug";
 import remarkGfm from "remark-gfm";
 import { PostMeta } from "@/components/blog/post-meta";
 import { PostNavigation } from "@/components/blog/post-navigation";
+import { Code } from "@/components/content/code";
 import { TableOfContents } from "@/components/content/table-of-contents";
 import { getAllPosts, getPostBySlug, getPostNavigation } from "@/lib/posts";
+import { rehypeSlugCustom } from "@/lib/rehype-slug-custom";
 import { generateTOC } from "@/lib/toc";
 import "highlight.js/styles/github-dark.css";
 
@@ -132,7 +133,10 @@ export default async function PostPage({
             {/* 文章内容 */}
             <div className="markdown-body w-full">
               <ReactMarkdown
-                rehypePlugins={[rehypeHighlight, rehypeSlug]}
+                components={{
+                  code: Code,
+                }}
+                rehypePlugins={[rehypeHighlight, rehypeSlugCustom]}
                 remarkPlugins={[remarkGfm]}
               >
                 {post.content}

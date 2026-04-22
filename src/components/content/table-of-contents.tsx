@@ -29,12 +29,11 @@ export function TableOfContents({ toc, title }: TableOfContentsProps) {
         }
       },
       {
-        rootMargin: "-20% 0px -60% 0px", // 顶部 20% 到底部 60% 的范围内触发
+        rootMargin: "-20% 0px -60% 0px",
         threshold: 0,
       }
     );
 
-    // 观察所有标题元素
     const headings = document.querySelectorAll(
       "h1[id], h2[id], h3[id], h4[id], h5[id], h6[id]"
     );
@@ -44,6 +43,30 @@ export function TableOfContents({ toc, title }: TableOfContentsProps) {
 
     return () => observer.disconnect();
   }, []);
+
+  // 处理目录点击
+  const handleItemClick = (
+    e: React.MouseEvent<HTMLAnchorElement>,
+    id: string
+  ) => {
+    e.preventDefault();
+    const element = document.getElementById(id);
+    if (element) {
+      const headerOffset = 80;
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition =
+        elementPosition + window.pageYOffset - headerOffset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth",
+      });
+
+      // 更新 URL hash
+      window.history.pushState(null, "", `#${id}`);
+      setActiveId(id);
+    }
+  };
 
   if (toc.length === 0) {
     return null;
@@ -63,6 +86,7 @@ export function TableOfContents({ toc, title }: TableOfContentsProps) {
             depth={0}
             item={item}
             key={item.id}
+            onItemClick={handleItemClick}
           />
         ))}
       </ul>
@@ -74,13 +98,15 @@ function TocItemNode({
   item,
   activeId,
   depth,
+  onItemClick,
 }: {
   item: TocItem;
   activeId: string;
   depth: number;
+  onItemClick: (e: React.MouseEvent<HTMLAnchorElement>, id: string) => void;
 }) {
   const isActive = activeId === item.id;
-  const paddingLeft = depth * 12; // 每级缩进 12px
+  const paddingLeft = depth * 12;
 
   return (
     <li>
@@ -91,6 +117,7 @@ function TocItemNode({
             : "text-gray-600 dark:text-gray-400"
         }`}
         href={`#${item.id}`}
+        onClick={(e) => onItemClick(e, item.id)}
         style={{ paddingLeft: `${paddingLeft}px` }}
       >
         {item.title}
@@ -103,6 +130,7 @@ function TocItemNode({
               depth={depth + 1}
               item={child}
               key={child.id}
+              onItemClick={onItemClick}
             />
           ))}
         </ul>
