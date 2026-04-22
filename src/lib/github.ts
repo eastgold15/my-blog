@@ -109,11 +109,11 @@ export async function fetchAllMarkdownFiles(): Promise<
         continue;
       }
 
-      // 将父级目录名作为 category
+      // 将完整目录路径作为 category（不包含文件名）
       const pathParts = item.path.split("/");
       const category =
         pathParts.length > 1
-          ? pathParts.at(-2) || "Uncategorized"
+          ? pathParts.slice(0, -1).join("/") // 完整目录路径
           : "Uncategorized";
 
       results.push({
@@ -156,8 +156,8 @@ export async function buildNavigationTree(): Promise<NavItem[]> {
   // 为每个第一层目录创建导航项
   for (const dir of Array.from(firstLevelDirs).sort()) {
     const navItem: NavItem = {
-      label: dir.replace(NUM_PREFIX_REGEX, ""), // 移除数字前缀
-      slug: dir === BLOG_DIR ? "/posts" : `/${dir}`,
+      label: dir.replace(NUM_PREFIX_REGEX, ""), // 显示时移除数字前缀
+      slug: dir === BLOG_DIR ? "/posts" : `/${dir}`, // 使用原始路径作为 URL
       isBlog: dir === BLOG_DIR,
       path: dir,
       children: [],
@@ -193,8 +193,8 @@ function getChildren(parentPath: string, tree: GitHubTreeItem[]): NavItem[] {
         }
 
         children.push({
-          label: childName.replace(NUM_PREFIX_REGEX, ""),
-          slug: `/${item.path}`,
+          label: childName.replace(NUM_PREFIX_REGEX, ""), // 显示时移除数字前缀
+          slug: `/${item.path}`, // 使用原始路径作为 URL
           path: item.path,
         });
       }
