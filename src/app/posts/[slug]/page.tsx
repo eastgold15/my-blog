@@ -147,7 +147,7 @@ export default async function PostPage({
             {post.tags.length > 0 && (
               <div className="mt-12 border-gray-200 border-t pt-8 dark:border-gray-700">
                 <div className="flex flex-wrap gap-2">
-                  {post.tags.map((tag) => (
+                  {post.tags.map((tag: string) => (
                     <span
                       className="rounded-full bg-gray-100 px-3 py-1 text-gray-700 text-sm dark:bg-gray-800 dark:text-gray-300"
                       key={tag}
