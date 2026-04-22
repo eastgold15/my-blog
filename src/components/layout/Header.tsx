@@ -70,7 +70,7 @@ function NavItem({ item }: { item: NavItemType }) {
       pathname === item.slug || pathname?.startsWith(`${item.slug}/`);
     return (
       <Link
-        className={`font-medium text-gray-700 text-sm transition-colors hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400 ${
+        className={`flex items-center font-medium text-gray-700 text-sm transition-colors hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400 ${
           isActive ? "text-blue-600 dark:text-blue-400" : ""
         }`}
         href={item.slug}
@@ -87,13 +87,16 @@ function NavItem({ item }: { item: NavItemType }) {
 
   return (
     <div
-      className="relative"
+      className="relative inline-block"
       onMouseEnter={() => setIsOpen(true)}
       onMouseLeave={() => setIsOpen(false)}
       role="menu"
     >
+      {/* 按钮和下拉菜单之间的透明连接区域 */}
+      <div className="absolute inset-x-0 -bottom-2 z-[-1] h-2" />
+
       <button
-        className={`flex items-center gap-1 font-medium text-gray-700 text-sm transition-colors hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400 ${
+        className={`flex items-center gap-1 py-4 font-medium text-gray-700 text-sm transition-colors hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400 ${
           hasActiveChild ? "text-blue-600 dark:text-blue-400" : ""
         }`}
         type="button"
@@ -115,9 +118,10 @@ function NavItem({ item }: { item: NavItemType }) {
         </svg>
       </button>
 
+      {/* 下拉菜单 */}
       {isOpen && (
         <div
-          className="absolute left-0 mt-2 w-48 rounded-lg border border-gray-200 bg-white py-2 shadow-lg dark:border-gray-700 dark:bg-gray-800"
+          className="absolute left-0 mt-0.5 w-48 rounded-lg border border-gray-200 bg-white py-2 shadow-lg dark:border-gray-700 dark:bg-gray-800"
           role="menu"
         >
           {item.children.map((child) => {

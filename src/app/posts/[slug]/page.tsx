@@ -88,17 +88,17 @@ export default async function PostPage({
 
   return (
     <div className="w-full px-4 py-12 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl">
+      <div className="mx-auto max-w-[1600px]">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
           {/* 左侧目录导航 - 只在桌面端显示 */}
           {toc.length > 0 && (
-            <aside className="hidden lg:col-span-2 lg:block">
+            <aside className="hidden lg:col-span-3 lg:block">
               <TableOfContents title="目录" toc={toc} />
             </aside>
           )}
 
           {/* 右侧文章内容 */}
-          <article className={`lg:col-span-${toc.length > 0 ? "10" : "12"}`}>
+          <article className={`lg:col-span-${toc.length > 0 ? "9" : "12"}`}>
             {/* 返回首页链接 */}
             <Link
               className="mb-8 inline-flex items-center text-gray-600 text-sm transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
