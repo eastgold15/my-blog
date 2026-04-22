@@ -9,12 +9,12 @@ export const dynamic = "force-static";
 export default async function BuildDiagnosticPage() {
   let files: any[] = [];
   let error: string | null = null;
-  let envInfo = {
+  const envInfo = {
     owner: process.env.NEXT_PUBLIC_GITHUB_OWNER,
     repo: process.env.NEXT_PUBLIC_GITHUB_REPO,
     branch: process.env.NEXT_PUBLIC_GITHUB_BRANCH,
     hasToken: !!process.env.BLOG_GITHUB_TOKEN,
-    isGitHubActions: process.env.GITHUB_ACTIONS === 'true',
+    isGitHubActions: process.env.GITHUB_ACTIONS === "true",
   };
 
   try {
@@ -24,25 +24,27 @@ export default async function BuildDiagnosticPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-12">
-      <h1 className="text-3xl font-bold mb-8">构建诊断信息</h1>
+    <div className="mx-auto max-w-4xl px-4 py-12">
+      <h1 className="mb-8 font-bold text-3xl">构建诊断信息</h1>
 
       <section className="mb-8">
-        <h2 className="text-xl font-semibold mb-4">环境信息</h2>
-        <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded overflow-x-auto text-sm">
+        <h2 className="mb-4 font-semibold text-xl">环境信息</h2>
+        <pre className="overflow-x-auto rounded bg-gray-100 p-4 text-sm dark:bg-gray-800">
           {JSON.stringify(envInfo, null, 2)}
         </pre>
       </section>
 
       {error && (
         <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-4 text-red-600">错误</h2>
+          <h2 className="mb-4 font-semibold text-red-600 text-xl">错误</h2>
           <p className="text-red-600">{error}</p>
         </section>
       )}
 
       <section>
-        <h2 className="text-xl font-semibold mb-4">获取到的文件 ({files.length})</h2>
+        <h2 className="mb-4 font-semibold text-xl">
+          获取到的文件 ({files.length})
+        </h2>
         {files.length === 0 ? (
           <p className="text-yellow-600">没有获取到任何文件！请检查：</p>
         ) : (
@@ -53,15 +55,17 @@ export default async function BuildDiagnosticPage() {
               </li>
             ))}
             {files.length > 20 && (
-              <li className="text-gray-500">... 还有 {files.length - 20} 个文件</li>
+              <li className="text-gray-500">
+                ... 还有 {files.length - 20} 个文件
+              </li>
             )}
           </ul>
         )}
       </section>
 
       <section className="mt-8">
-        <h2 className="text-xl font-semibold mb-4">检查清单</h2>
-        <ul className="list-disc pl-6 space-y-2">
+        <h2 className="mb-4 font-semibold text-xl">检查清单</h2>
+        <ul className="list-disc space-y-2 pl-6">
           <li className={envInfo.hasToken ? "text-green-600" : "text-red-600"}>
             {envInfo.hasToken ? "✅" : "❌"} GitHub Token 已配置
           </li>

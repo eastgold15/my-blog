@@ -3,22 +3,22 @@
  */
 
 export interface SoftwareItem {
-  /** 软件名称 */
-  name: string;
-  /** 软件图标 URL */
-  icon: string;
-  /** 官网链接 */
-  url: string;
-  /** 软件描述 */
-  description: string;
   /** 软件分类 */
   category?: SoftwareCategory;
-  /** 是否开源 */
-  openSource?: boolean;
+  /** 软件描述 */
+  description: string;
   /** 是否免费 */
   free?: boolean;
+  /** 软件图标 URL */
+  icon: string;
+  /** 软件名称 */
+  name: string;
+  /** 是否开源 */
+  openSource?: boolean;
   /** 评分 (1-5) */
   rating?: number;
+  /** 官网链接 */
+  url: string;
 }
 
 export type SoftwareCategory =

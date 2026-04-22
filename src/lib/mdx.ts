@@ -23,7 +23,9 @@ export function extractFrontmatter(content: string): BlogFrontmatter {
   const lines = yamlContent.split("\n");
   for (const line of lines) {
     const colonIndex = line.indexOf(":");
-    if (colonIndex === -1) continue;
+    if (colonIndex === -1) {
+      continue;
+    }
 
     const key = line.slice(0, colonIndex).trim();
     let value = line.slice(colonIndex + 1).trim();
@@ -84,7 +86,7 @@ export function removeFrontmatter(content: string): string {
 /**
  * 生成文章摘要（从内容中提取前 N 个字符）
  */
-export function generateExcerpt(content: string, maxLength: number = 200): string {
+export function generateExcerpt(content: string, maxLength = 200): string {
   const cleanContent = removeFrontmatter(content)
     // 移除 Markdown 语法
     .replace(/#{1,6}\s+/g, "")
@@ -151,6 +153,6 @@ export function parseBlogPost(
     tags: frontmatter.tags || [],
     author: frontmatter.author,
     readingTime: calculateReadingTime(content),
-    draft: frontmatter.draft || false,
+    draft: frontmatter.draft,
   };
 }

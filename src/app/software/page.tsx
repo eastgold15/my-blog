@@ -3,9 +3,9 @@
  * 展示常用软件和工具
  */
 
-import { SoftwareCard } from "@/components/software/SoftwareCard";
-import type { SoftwareItem, SoftwareCategory } from "@/types/software";
 import Link from "next/link";
+import { SoftwareCard } from "@/components/software/SoftwareCard";
+import type { SoftwareCategory, SoftwareItem } from "@/types/software";
 
 // 示例软件数据 - 你可以根据需要修改或从其他来源获取
 const softwareList: SoftwareItem[] = [
@@ -23,7 +23,8 @@ const softwareList: SoftwareItem[] = [
     name: "Obsidian",
     icon: "https://obsidian.md/favicon.ico",
     url: "https://obsidian.md/",
-    description: "强大的知识管理工具，支持 Markdown、双向链接和丰富的插件生态。",
+    description:
+      "强大的知识管理工具，支持 Markdown、双向链接和丰富的插件生态。",
     category: "生产力",
     openSource: false,
     free: true,
@@ -84,60 +85,64 @@ const categories: SoftwareCategory[] = [
 
 export default function SoftwarePage() {
   // 按分类组织软件
-  const softwareByCategory = categories.reduce((acc, category) => {
-    const items = softwareList.filter((s) => s.category === category);
-    if (items.length > 0) {
-      acc[category] = items;
-    }
-    return acc;
-  }, {} as Record<SoftwareCategory, SoftwareItem[]>);
+  const softwareByCategory = categories.reduce(
+    (acc, category) => {
+      const items = softwareList.filter((s) => s.category === category);
+      if (items.length > 0) {
+        acc[category] = items;
+      }
+      return acc;
+    },
+    {} as Record<SoftwareCategory, SoftwareItem[]>
+  );
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
       {/* 页面头部 */}
       <section className="mb-12">
-        <div className="flex items-center gap-4 mb-4">
+        <div className="mb-4 flex items-center gap-4">
           <Link
+            className="inline-flex items-center text-gray-600 text-sm transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
             href="/"
-            className="inline-flex items-center text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
           >
             <svg
-              className="w-4 h-4 mr-1"
+              className="mr-1 h-4 w-4"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
             >
               <path
+                d="M10 19l-7-7m0 0l7-7m-7 7h18"
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={2}
-                d="M10 19l-7-7m0 0l7-7m-7 7h18"
               />
             </svg>
             返回首页
           </Link>
         </div>
-        <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+        <h1 className="mb-4 font-bold text-4xl text-gray-900 dark:text-white">
           软件推荐
         </h1>
-        <p className="text-lg text-gray-600 dark:text-gray-400">
+        <p className="text-gray-600 text-lg dark:text-gray-400">
           这里是我日常使用的软件和工具推荐，希望能对你有所帮助。
         </p>
       </section>
 
       {/* 分类快速导航 */}
       <nav className="mb-12">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+        <h2 className="mb-4 font-semibold text-gray-900 text-xl dark:text-white">
           分类导航
         </h2>
         <div className="flex flex-wrap gap-3">
           {Object.keys(softwareByCategory).map((category) => (
             <a
-              key={category}
+              className="rounded-lg bg-gray-100 px-4 py-2 text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
               href={`#${category}`}
-              className="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              key={category}
             >
-              {category} ({softwareByCategory[category as SoftwareCategory].length})
+              {category} (
+              {softwareByCategory[category as SoftwareCategory].length})
             </a>
           ))}
         </div>
@@ -145,8 +150,8 @@ export default function SoftwarePage() {
 
       {/* 软件列表 */}
       {Object.entries(softwareByCategory).map(([category, items]) => (
-        <section key={category} id={category} className="mb-12 scroll-mt-20">
-          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
+        <section className="mb-12 scroll-mt-20" id={category} key={category}>
+          <h2 className="mb-6 font-semibold text-2xl text-gray-900 dark:text-white">
             {category}
           </h2>
           <div className="grid gap-4 md:grid-cols-2">
@@ -159,7 +164,7 @@ export default function SoftwarePage() {
 
       {/* 空状态 */}
       {softwareList.length === 0 && (
-        <div className="text-center py-12">
+        <div className="py-12 text-center">
           <p className="text-gray-600 dark:text-gray-400">
             暂无软件推荐，敬请期待...
           </p>

@@ -9,16 +9,16 @@ import { ghFetch } from "./api";
 export interface GitHubFile {
   name: string;
   path: string;
-  type: "file" | "dir";
   size?: number;
+  type: "file" | "dir";
   url?: string;
 }
 
 export interface GitHubTreeItem {
-  path: string;
   mode: string;
-  type: string;
+  path: string;
   size?: number;
+  type: string;
   url?: string;
 }
 
@@ -86,7 +86,9 @@ export async function fetchAllMarkdownFiles(): Promise<
       // 将父级目录名作为 category
       const pathParts = item.path.split("/");
       const category =
-        pathParts.length > 1 ? pathParts[pathParts.length - 2] : "Uncategorized";
+        pathParts.length > 1
+          ? pathParts[pathParts.length - 2]
+          : "Uncategorized";
 
       results.push({
         category,

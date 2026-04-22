@@ -9,15 +9,15 @@
  */
 export function convertWikiLinks(content: string): string {
   // [[文件名]] -> [文件名](/posts/file-name)
-  return content.replace(
-    /\[\[([^\]]+)\]\]/g,
-    (match, linkText) => {
-      const [text, alias] = linkText.split("|");
-      const slug = text.toLowerCase().replace(/\s+/g, "-").replace(/[^\w\-一-龥]/g, "");
-      const display = alias || text;
-      return `[${display}](/posts/${slug})`;
-    }
-  );
+  return content.replace(/\[\[([^\]]+)\]\]/g, (match, linkText) => {
+    const [text, alias] = linkText.split("|");
+    const slug = text
+      .toLowerCase()
+      .replace(/\s+/g, "-")
+      .replace(/[^\w\-一-龥]/g, "");
+    const display = alias || text;
+    return `[${display}](/posts/${slug})`;
+  });
 }
 
 /**
@@ -39,16 +39,13 @@ export function convertEmbeds(content: string): string {
 export function convertTags(content: string): string {
   // 将 #标签（在行尾或独立）转换为标签组件
   // 避免转换标题中的 #
-  return content.replace(
-    /(^|\s)#([^\s#]+)/gm,
-    (match, prefix, tag) => {
-      // 排除已经是标题的情况
-      if (prefix === "" && match.startsWith("##")) {
-        return match;
-      }
-      return `${prefix}[#${tag}](/tags/${tag})`;
+  return content.replace(/(^|\s)#([^\s#]+)/gm, (match, prefix, tag) => {
+    // 排除已经是标题的情况
+    if (prefix === "" && match.startsWith("##")) {
+      return match;
     }
-  );
+    return `${prefix}[#${tag}](/tags/${tag})`;
+  });
 }
 
 /**

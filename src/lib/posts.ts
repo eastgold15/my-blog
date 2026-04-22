@@ -3,10 +3,10 @@
  * 结合 GitHub API 和 MDX 处理
  */
 
+import type { BlogCategory, BlogPost } from "@/types/blog";
 import { fetchAllMarkdownFiles, getFileContent } from "./github";
-import { parseBlogPost, generateSlug } from "./mdx";
+import { generateSlug, parseBlogPost } from "./mdx";
 import { processObsidianSyntax } from "./obsidian";
-import type { BlogPost, BlogCategory } from "@/types/blog";
 
 /**
  * 获取所有博客文章（带容错处理）
@@ -20,7 +20,9 @@ export async function getAllPosts(): Promise<BlogPost[]> {
   const errors: string[] = [];
 
   for (const { category, file } of markdownFiles) {
-    if (!file.path) { continue; }
+    if (!file.path) {
+      continue;
+    }
 
     try {
       const content = await getFileContent(file.path);
@@ -42,7 +44,9 @@ export async function getAllPosts(): Promise<BlogPost[]> {
       });
     } catch (error: any) {
       // 即使内容获取失败，也创建一个基本文章条目
-      console.warn(`[getAllPosts] ⚠️ 文件内容获取失败，使用基本信息: ${file.path}`);
+      console.warn(
+        `[getAllPosts] ⚠️ 文件内容获取失败，使用基本信息: ${file.path}`
+      );
 
       // 创建基本文章对象，确保至少能生成路由
       const slug = generateSlug(file.name, category);
@@ -84,7 +88,9 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
   const posts = await getAllPosts();
 
   // 同时检查原始 slug 和解码后的 slug
-  const post = posts.find((post) => post.slug === slug || post.slug === decodedSlug);
+  const post = posts.find(
+    (post) => post.slug === slug || post.slug === decodedSlug
+  );
 
   console.log(`[getPostBySlug] 找到: ${post ? post.title : "未找到"}`);
   return post || null;
@@ -116,7 +122,9 @@ export async function getAllCategories(): Promise<BlogCategory[]> {
 /**
  * 根据分类获取文章
  */
-export async function getPostsByCategory(category: string): Promise<BlogPost[]> {
+export async function getPostsByCategory(
+  category: string
+): Promise<BlogPost[]> {
   const posts = await getAllPosts();
   return posts.filter((post) => post.category === category);
 }

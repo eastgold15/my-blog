@@ -5,22 +5,26 @@
 import Link from "next/link";
 import type { PostNavigation as PostNavigationType } from "@/types/blog";
 
-export function PostNavigation({ navigation }: { navigation: PostNavigationType }) {
-  if (!navigation.prev && !navigation.next) {
+export function PostNavigation({
+  navigation,
+}: {
+  navigation: PostNavigationType;
+}) {
+  if (!(navigation.prev || navigation.next)) {
     return null;
   }
 
   return (
-    <nav className="flex justify-between items-start gap-4 mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
+    <nav className="mt-12 flex items-start justify-between gap-4 border-gray-200 border-t pt-8 dark:border-gray-700">
       {navigation.prev ? (
         <Link
+          className="flex-1 rounded-lg bg-gray-50 p-4 transition-colors hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700"
           href={`/posts/${navigation.prev.slug}`}
-          className="flex-1 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
         >
-          <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+          <div className="mb-1 text-gray-500 text-sm dark:text-gray-400">
             ← 上一篇
           </div>
-          <div className="font-medium text-gray-900 dark:text-white line-clamp-1">
+          <div className="line-clamp-1 font-medium text-gray-900 dark:text-white">
             {navigation.prev.title}
           </div>
         </Link>
@@ -30,13 +34,13 @@ export function PostNavigation({ navigation }: { navigation: PostNavigationType 
 
       {navigation.next ? (
         <Link
+          className="flex-1 rounded-lg bg-gray-50 p-4 text-right transition-colors hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700"
           href={`/posts/${navigation.next.slug}`}
-          className="flex-1 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-right"
         >
-          <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+          <div className="mb-1 text-gray-500 text-sm dark:text-gray-400">
             下一篇 →
           </div>
-          <div className="font-medium text-gray-900 dark:text-white line-clamp-1">
+          <div className="line-clamp-1 font-medium text-gray-900 dark:text-white">
             {navigation.next.title}
           </div>
         </Link>
