@@ -44,10 +44,10 @@ export async function getAllPosts(): Promise<BlogPost[]> {
         ...postData,
         slug,
       });
-    } catch (error: any) {
+    } catch (error) {
       // 即使内容获取失败，也创建一个基本文章条目
       console.warn(
-        `[getAllPosts] ⚠️ 文件内容获取失败，使用基本信息: ${file.path}`
+        `[getAllPosts] ⚠️ 文件内容获取失败，使用基本信息：${file.path}`
       );
 
       // 创建基本文章对象，确保至少能生成路由
@@ -62,7 +62,9 @@ export async function getAllPosts(): Promise<BlogPost[]> {
         tags: [],
       });
 
-      errors.push(`${file.path}: ${error.message}`);
+      errors.push(
+        `${file.path}: ${error instanceof Error ? error.message : "未知错误"}`
+      );
     }
   }
 
@@ -85,7 +87,7 @@ export async function getAllPosts(): Promise<BlogPost[]> {
 export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
   // URL 可能被编码，需要解码
   const decodedSlug = decodeURIComponent(slug);
-  console.log(`[getPostBySlug] 查找 slug: ${slug} -> 解码后: ${decodedSlug}`);
+  console.log(`[getPostBySlug] 查找 slug: ${slug} -> 解码后：${decodedSlug}`);
 
   const posts = await getAllPosts();
 
@@ -94,7 +96,7 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
     (post) => post.slug === slug || post.slug === decodedSlug
   );
 
-  console.log(`[getPostBySlug] 找到: ${post ? post.title : "未找到"}`);
+  console.log(`[getPostBySlug] 找到：${post ? post.title : "未找到"}`);
   return post || null;
 }
 

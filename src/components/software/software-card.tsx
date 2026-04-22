@@ -3,6 +3,7 @@
  * 展示软件图标、名称、描述和链接
  */
 
+import Image from "next/image";
 import type { SoftwareItem } from "@/types/software";
 
 export function SoftwareCard({ software }: { software: SoftwareItem }) {
@@ -14,9 +15,9 @@ export function SoftwareCard({ software }: { software: SoftwareItem }) {
       target="_blank"
     >
       {/* 软件图标 */}
-      <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-700">
+      <div className="relative flex h-16 w-16 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-700">
         {software.icon ? (
-          <img
+          <Image
             alt={software.name}
             className="h-full w-full object-cover"
             height={64}
@@ -77,11 +78,11 @@ export function SoftwareCard({ software }: { software: SoftwareItem }) {
               <svg
                 aria-hidden="true"
                 className={`h-4 w-4 ${
-                  i < software.rating
+                  i < (software.rating ?? 0)
                     ? "fill-current text-yellow-400"
                     : "text-gray-300 dark:text-gray-600"
                 }`}
-                key={i}
+                key={i.toString()}
                 viewBox="0 0 20 20"
               >
                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />

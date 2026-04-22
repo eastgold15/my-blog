@@ -4,7 +4,7 @@
  */
 
 import Link from "next/link";
-import { SoftwareCard } from "@/components/software/SoftwareCard";
+import { SoftwareCard } from "@/components/software/software-card";
 import type { SoftwareCategory, SoftwareItem } from "@/types/software";
 
 // 示例软件数据 - 你可以根据需要修改或从其他来源获取
