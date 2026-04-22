@@ -4,7 +4,10 @@
  */
 
 import type { NavItem } from "@/types/navigation";
-import { buildNavigationTree } from "./github";
+import {
+  buildNavigationTree,
+  getFilepathMap as getGithubFilepathMap,
+} from "./github";
 
 // 导航缓存
 let navCache: NavItem[] | null = null;
@@ -31,7 +34,7 @@ export async function getFilepathMap(): Promise<Map<string, string>> {
     return filepathMapCache;
   }
 
-  filepathMapCache = await getFilepathMap();
+  filepathMapCache = await getGithubFilepathMap();
   return filepathMapCache;
 }
 
@@ -43,14 +46,16 @@ export async function findFilePath(fileName: string): Promise<string | null> {
   const map = await getFilepathMap();
 
   // 直接匹配
-  if (map.has(fileName)) {
-    return map.get(fileName)!;
+  const directMatch = map.get(fileName);
+  if (directMatch) {
+    return directMatch;
   }
 
   // 尝试移除空格匹配
   const normalized = fileName.replace(/\s+/g, "-");
-  if (map.has(normalized)) {
-    return map.get(normalized)!;
+  const normalizedMatch = map.get(normalized);
+  if (normalizedMatch) {
+    return normalizedMatch;
   }
 
   // 模糊匹配：查找包含该文件名的路径

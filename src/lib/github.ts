@@ -3,6 +3,7 @@
  * 用于获取远程仓库的文件内容
  */
 
+import micromatch from "micromatch";
 import { config } from "@/configs/config";
 import type { NavItem } from "@/types/navigation";
 import { ghFetch } from "./api";
@@ -36,6 +37,27 @@ export interface GitHubContent {
 
 // 博客目录名称（可配置）
 const BLOG_DIR = "0-blog";
+
+// 用于移除数字前缀的正则
+const NUM_PREFIX_REGEX = /^\d+-/;
+
+// 用于匹配 md/mdx 扩展名的正则
+const MD_EXTENSION_REGEX = /\.(md|mdx)$/;
+
+/**
+ * 检查文件是否应该被过滤
+ * 使用 glob 模式匹配配置文件中的规则
+ */
+export function shouldFilterFile(path: string): boolean {
+  const ignorePatterns = config.files?.ignorePatterns || [];
+
+  // 使用 micromatch 进行 glob 匹配
+  if (ignorePatterns.length > 0) {
+    return micromatch.isMatch(path, ignorePatterns);
+  }
+
+  return false;
+}
 
 // 获取文件列表
 export function getRepoFiles(path: string) {
@@ -82,8 +104,8 @@ export async function fetchAllMarkdownFiles(): Promise<
       item.type === "blob" &&
       (item.path.endsWith(".md") || item.path.endsWith(".mdx"))
     ) {
-      // 跳过隐藏目录中的文件
-      if (item.path.split("/").some((part) => part.startsWith("."))) {
+      // 跳过需要过滤的文件
+      if (shouldFilterFile(item.path)) {
         continue;
       }
 
@@ -134,7 +156,7 @@ export async function buildNavigationTree(): Promise<NavItem[]> {
   // 为每个第一层目录创建导航项
   for (const dir of Array.from(firstLevelDirs).sort()) {
     const navItem: NavItem = {
-      label: dir.replace(/^\d+-/, ""), // 移除数字前缀
+      label: dir.replace(NUM_PREFIX_REGEX, ""), // 移除数字前缀
       slug: dir === BLOG_DIR ? "/posts" : `/${dir}`,
       isBlog: dir === BLOG_DIR,
       path: dir,
@@ -156,10 +178,7 @@ export async function buildNavigationTree(): Promise<NavItem[]> {
 /**
  * 获取目录的子项
  */
-async function getChildren(
-  parentPath: string,
-  tree: GitHubTreeItem[]
-): Promise<NavItem[]> {
+function getChildren(parentPath: string, tree: GitHubTreeItem[]): NavItem[] {
   const children: NavItem[] = [];
 
   for (const item of tree) {
@@ -174,7 +193,7 @@ async function getChildren(
         }
 
         children.push({
-          label: childName.replace(/^\d+-/, ""),
+          label: childName.replace(NUM_PREFIX_REGEX, ""),
           slug: `/${item.path}`,
           path: item.path,
         });
@@ -195,11 +214,11 @@ export async function getAllFilesInDir(dirPath: string): Promise<GitHubFile[]> {
   for (const item of tree) {
     if (
       item.type === "blob" &&
-      item.path.startsWith(dirPath + "/") &&
+      item.path.startsWith(`${dirPath}/`) &&
       (item.path.endsWith(".md") || item.path.endsWith(".mdx"))
     ) {
-      // 跳过隐藏目录
-      if (item.path.split("/").some((part) => part.startsWith("."))) {
+      // 跳过需要过滤的文件
+      if (shouldFilterFile(item.path)) {
         continue;
       }
 
@@ -230,13 +249,13 @@ export async function getFilepathMap(): Promise<Map<string, string>> {
       item.type === "blob" &&
       (item.path.endsWith(".md") || item.path.endsWith(".mdx"))
     ) {
-      // 跳过隐藏目录
-      if (item.path.split("/").some((part) => part.startsWith("."))) {
+      // 跳过需要过滤的文件
+      if (shouldFilterFile(item.path)) {
         continue;
       }
 
       const parts = item.path.split("/");
-      const fileName = parts.at(-1)?.replace(/\.(md|mdx)$/, "") || "";
+      const fileName = parts.at(-1)?.replace(MD_EXTENSION_REGEX, "") || "";
 
       // 存储多个可能的 key 用于模糊匹配
       pathMap.set(fileName, item.path); // 文件名

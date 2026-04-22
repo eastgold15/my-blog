@@ -22,9 +22,8 @@ export function generateTOC(content: string): TocItem[] {
 
   // 匹配 Markdown 标题 # ## ### 等
   const headingRegex = /^(#{1,6})\s+(.+)$/gm;
-  let match: RegExpExecArray | null;
 
-  while ((match = headingRegex.exec(content)) !== null) {
+  for (const match of content.matchAll(headingRegex)) {
     const level = match[1].length;
     const title = match[2].trim();
 
@@ -68,7 +67,11 @@ function buildHierarchy(headings: TocItem[]): TocItem[] {
     const node: TocItem = { ...heading, children: [] };
 
     // 找到合适的父节点
-    while (stack.length > 0 && stack[stack.length - 1].level >= heading.level) {
+    while (stack.length > 0) {
+      const top = stack.at(-1);
+      if (!top?.level || top.level < heading.level) {
+        break;
+      }
       stack.pop();
     }
 
@@ -77,11 +80,13 @@ function buildHierarchy(headings: TocItem[]): TocItem[] {
       result.push(node);
     } else {
       // 有父节点，添加到父节点的 children
-      const parent = stack[stack.length - 1].item;
-      if (!parent.children) {
+      const parent = stack.at(-1)?.item;
+      if (parent && !parent.children) {
         parent.children = [];
       }
-      parent.children.push(node);
+      if (parent) {
+        parent.children.push(node);
+      }
     }
 
     stack.push({ item: node, level: heading.level });

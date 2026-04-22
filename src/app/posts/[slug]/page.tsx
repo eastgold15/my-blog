@@ -87,76 +87,78 @@ export default async function PostPage({
   const toc = generateTOC(post.content);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
-        {/* 左侧目录导航 - 只在桌面端显示 */}
-        {toc.length > 0 && (
-          <aside className="hidden lg:col-span-3 lg:block">
-            <TableOfContents title="目录" toc={toc} />
-          </aside>
-        )}
-
-        {/* 右侧文章内容 */}
-        <article className={`lg:col-span-${toc.length > 0 ? "9" : "12"}`}>
-          {/* 返回首页链接 */}
-          <Link
-            className="mb-8 inline-flex items-center text-gray-600 text-sm transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-            href="/"
-          >
-            <svg
-              aria-hidden="true"
-              className="mr-1 h-4 w-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                d="M10 19l-7-7m0 0l7-7m-7 7h18"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-              />
-            </svg>
-            返回首页
-          </Link>
-
-          {/* 文章标题 */}
-          <header className="mb-8">
-            <h1 className="mb-4 font-bold text-4xl text-gray-900 dark:text-white">
-              {post.title}
-            </h1>
-            <PostMeta post={post} />
-          </header>
-
-          {/* 文章内容 */}
-          <div className="prose prose-lg dark:prose-invert markdown-body max-w-none">
-            <ReactMarkdown
-              rehypePlugins={[rehypeHighlight, rehypeSlug]}
-              remarkPlugins={[remarkGfm]}
-            >
-              {post.content}
-            </ReactMarkdown>
-          </div>
-
-          {/* 标签 */}
-          {post.tags.length > 0 && (
-            <div className="mt-12 border-gray-200 border-t pt-8 dark:border-gray-700">
-              <div className="flex flex-wrap gap-2">
-                {post.tags.map((tag) => (
-                  <span
-                    className="rounded-full bg-gray-100 px-3 py-1 text-gray-700 text-sm dark:bg-gray-800 dark:text-gray-300"
-                    key={tag}
-                  >
-                    #{tag}
-                  </span>
-                ))}
-              </div>
-            </div>
+    <div className="w-full px-4 py-12 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+          {/* 左侧目录导航 - 只在桌面端显示 */}
+          {toc.length > 0 && (
+            <aside className="hidden lg:col-span-2 lg:block">
+              <TableOfContents title="目录" toc={toc} />
+            </aside>
           )}
 
-          {/* 文章导航 */}
-          <PostNavigation navigation={navigation} />
-        </article>
+          {/* 右侧文章内容 */}
+          <article className={`lg:col-span-${toc.length > 0 ? "10" : "12"}`}>
+            {/* 返回首页链接 */}
+            <Link
+              className="mb-8 inline-flex items-center text-gray-600 text-sm transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+              href="/"
+            >
+              <svg
+                aria-hidden="true"
+                className="mr-1 h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                />
+              </svg>
+              返回首页
+            </Link>
+
+            {/* 文章标题 */}
+            <header className="mb-8">
+              <h1 className="mb-4 font-bold text-4xl text-gray-900 dark:text-white">
+                {post.title}
+              </h1>
+              <PostMeta post={post} />
+            </header>
+
+            {/* 文章内容 */}
+            <div className="prose prose-lg dark:prose-invert markdown-body max-w-none">
+              <ReactMarkdown
+                rehypePlugins={[rehypeHighlight, rehypeSlug]}
+                remarkPlugins={[remarkGfm]}
+              >
+                {post.content}
+              </ReactMarkdown>
+            </div>
+
+            {/* 标签 */}
+            {post.tags.length > 0 && (
+              <div className="mt-12 border-gray-200 border-t pt-8 dark:border-gray-700">
+                <div className="flex flex-wrap gap-2">
+                  {post.tags.map((tag) => (
+                    <span
+                      className="rounded-full bg-gray-100 px-3 py-1 text-gray-700 text-sm dark:bg-gray-800 dark:text-gray-300"
+                      key={tag}
+                    >
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 文章导航 */}
+            <PostNavigation navigation={navigation} />
+          </article>
+        </div>
       </div>
     </div>
   );

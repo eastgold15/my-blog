@@ -58,7 +58,12 @@ export function TableOfContents({ toc, title }: TableOfContentsProps) {
       )}
       <ul className="space-y-1 text-sm">
         {toc.map((item) => (
-          <TocItemNode activeId={activeId} depth={0} item={item} key={item.id} />
+          <TocItemNode
+            activeId={activeId}
+            depth={0}
+            item={item}
+            key={item.id}
+          />
         ))}
       </ul>
     </nav>

@@ -8,10 +8,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import type { NavItem } from "@/types/navigation";
+import type { NavItem as NavItemType } from "@/types/navigation";
 
 interface HeaderProps {
-  navItems: NavItem[];
+  navItems: NavItemType[];
 }
 
 export function Header({ navItems }: HeaderProps) {
@@ -60,14 +60,14 @@ function NavLink({
   );
 }
 
-function NavItem({ item }: { item: NavItem }) {
+function NavItem({ item }: { item: NavItemType }) {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
 
   // 如果没有子菜单，直接渲染链接
   if (!item.children || item.children.length === 0) {
     const isActive =
-      pathname === item.slug || pathname?.startsWith(item.slug + "/");
+      pathname === item.slug || pathname?.startsWith(`${item.slug}/`);
     return (
       <Link
         className={`font-medium text-gray-700 text-sm transition-colors hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400 ${
@@ -82,7 +82,7 @@ function NavItem({ item }: { item: NavItem }) {
 
   // 有子菜单，渲染下拉菜单
   const hasActiveChild = item.children.some(
-    (child) => pathname === child.slug || pathname?.startsWith(child.slug + "/")
+    (child) => pathname === child.slug || pathname?.startsWith(`${child.slug}/`)
   );
 
   return (
@@ -90,14 +90,17 @@ function NavItem({ item }: { item: NavItem }) {
       className="relative"
       onMouseEnter={() => setIsOpen(true)}
       onMouseLeave={() => setIsOpen(false)}
+      role="menu"
     >
       <button
         className={`flex items-center gap-1 font-medium text-gray-700 text-sm transition-colors hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400 ${
           hasActiveChild ? "text-blue-600 dark:text-blue-400" : ""
         }`}
+        type="button"
       >
         {item.label}
         <svg
+          aria-hidden="true"
           className={`h-4 w-4 transition-transform ${isOpen ? "rotate-180" : ""}`}
           fill="none"
           stroke="currentColor"
@@ -113,10 +116,13 @@ function NavItem({ item }: { item: NavItem }) {
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 mt-2 w-48 rounded-lg border border-gray-200 bg-white py-2 shadow-lg dark:border-gray-700 dark:bg-gray-800">
+        <div
+          className="absolute left-0 mt-2 w-48 rounded-lg border border-gray-200 bg-white py-2 shadow-lg dark:border-gray-700 dark:bg-gray-800"
+          role="menu"
+        >
           {item.children.map((child) => {
             const isChildActive =
-              pathname === child.slug || pathname?.startsWith(child.slug + "/");
+              pathname === child.slug || pathname?.startsWith(`${child.slug}/`);
             return (
               <Link
                 className={`block px-4 py-2 text-sm transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 ${
@@ -126,6 +132,7 @@ function NavItem({ item }: { item: NavItem }) {
                 }`}
                 href={child.slug}
                 key={child.slug}
+                role="menuitem"
               >
                 {child.label}
               </Link>
