@@ -80,12 +80,12 @@ export function TableOfContents({ toc, title }: TableOfContentsProps) {
         </h3>
       )}
       <ul className="space-y-1 text-sm">
-        {toc.map((item) => (
+        {toc.map((item, index) => (
           <TocItemNode
             activeId={activeId}
             depth={0}
             item={item}
-            key={item.id}
+            key={item.id || `toc-${index}`}
             onItemClick={handleItemClick}
           />
         ))}
@@ -116,20 +116,24 @@ function TocItemNode({
             ? "font-medium text-blue-600 dark:text-blue-400"
             : "text-gray-600 dark:text-gray-400"
         }`}
-        href={`#${item.id}`}
-        onClick={(e) => onItemClick(e, item.id)}
+        href={item.id ? `#${item.id}` : undefined}
+        onClick={(e) => {
+          if (item.id) {
+            onItemClick(e, item.id);
+          }
+        }}
         style={{ paddingLeft: `${paddingLeft}px` }}
       >
         {item.title}
       </a>
       {item.children && item.children.length > 0 && (
         <ul className="mt-1 space-y-1">
-          {item.children.map((child) => (
+          {item.children.map((child, childIndex) => (
             <TocItemNode
               activeId={activeId}
               depth={depth + 1}
               item={child}
-              key={child.id}
+              key={child.id || `toc-${childIndex}`}
               onItemClick={onItemClick}
             />
           ))}

@@ -37,6 +37,11 @@ export const rehypeSlugCustom: Plugin<[], Root> = () => {
         const title = hastToString(node);
         let id = generateAnchorId(title);
 
+        // 如果 ID 为空，使用时间戳作为后备
+        if (!id) {
+          id = `heading-${Date.now()}-${idCount.size}`;
+        }
+
         // 如果 ID 已存在，添加计数后缀
         const count = idCount.get(id) || 0;
         if (count > 0) {

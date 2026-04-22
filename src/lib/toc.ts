@@ -31,6 +31,11 @@ export function generateTOC(content: string): TocItem[] {
     // 生成 ID（与 ReactMarkdown 生成的 ID 保持一致）
     let id = generateAnchorId(title);
 
+    // 如果 ID 为空（标题只包含特殊字符），使用时间戳作为后备
+    if (!id) {
+      id = `heading-${Date.now()}-${headings.length}`;
+    }
+
     // 如果 ID 已存在，添加计数后缀
     const count = idCount.get(id) || 0;
     if (count > 0) {
