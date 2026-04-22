@@ -106,6 +106,7 @@ export default function SoftwarePage() {
             href="/"
           >
             <svg
+              aria-hidden="true"
               className="mr-1 h-4 w-4"
               fill="none"
               stroke="currentColor"

@@ -87,13 +87,13 @@ export async function fetchAllMarkdownFiles(): Promise<
       const pathParts = item.path.split("/");
       const category =
         pathParts.length > 1
-          ? pathParts[pathParts.length - 2]
+          ? pathParts.at(-2) || "Uncategorized"
           : "Uncategorized";
 
       results.push({
         category,
         file: {
-          name: pathParts[pathParts.length - 1],
+          name: pathParts.at(-1) || item.path,
           path: item.path,
           type: "file",
           size: item.size,

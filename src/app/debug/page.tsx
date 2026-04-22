@@ -2,24 +2,30 @@
  * 调试页面 - 查看获取的文章数据
  */
 
+import type { GitHubFile } from "@/lib/github";
 import { fetchAllMarkdownFiles } from "@/lib/github";
 import { getAllPosts } from "@/lib/posts";
+import type { BlogPost } from "@/types/blog";
 
 export default async function DebugPage() {
-  let files: Array<{ category: string; file: any }> = [];
-  let posts: any[] = [];
+  let files: Array<{ category: string; file: GitHubFile }> = [];
+  let posts: BlogPost[] = [];
   let error: string | null = null;
 
   try {
     files = await fetchAllMarkdownFiles();
-  } catch (e: any) {
-    error = `获取文件列表失败: ${e.message}`;
+  } catch (e) {
+    error =
+      e instanceof Error
+        ? `获取文件列表失败：${e.message}`
+        : "获取文件列表失败";
   }
 
   try {
     posts = await getAllPosts();
-  } catch (e: any) {
-    error = error || `获取文章失败: ${e.message}`;
+  } catch (e) {
+    const errorMessage = e instanceof Error ? e.message : "未知错误";
+    error = error || `获取文章失败：${errorMessage}`;
   }
 
   return (
@@ -42,10 +48,10 @@ export default async function DebugPage() {
             <p className="text-red-500">没有找到任何 Markdown 文件</p>
           ) : (
             <div className="space-y-2">
-              {files.map((item, index) => (
+              {files.map((item) => (
                 <div
                   className="rounded bg-gray-100 p-4 font-mono text-sm dark:bg-gray-800"
-                  key={index}
+                  key={item.file.path}
                 >
                   <p>
                     <strong>分类:</strong> {item.category}
@@ -73,10 +79,10 @@ export default async function DebugPage() {
             <p className="text-yellow-500">没有成功解析任何文章</p>
           ) : (
             <div className="space-y-2">
-              {posts.map((post, index) => (
+              {posts.map((post) => (
                 <div
                   className="rounded bg-green-100 p-4 dark:bg-green-900"
-                  key={index}
+                  key={post.slug}
                 >
                   <p>
                     <strong>标题:</strong> {post.title}

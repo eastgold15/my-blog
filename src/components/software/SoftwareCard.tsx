@@ -19,7 +19,9 @@ export function SoftwareCard({ software }: { software: SoftwareItem }) {
           <img
             alt={software.name}
             className="h-full w-full object-cover"
+            height={64}
             src={software.icon}
+            width={64}
           />
         ) : (
           <span className="text-2xl">📦</span>
@@ -73,8 +75,9 @@ export function SoftwareCard({ software }: { software: SoftwareItem }) {
           <div className="mt-2 flex items-center gap-1">
             {Array.from({ length: 5 }).map((_, i) => (
               <svg
+                aria-hidden="true"
                 className={`h-4 w-4 ${
-                  i < software.rating!
+                  i < software.rating
                     ? "fill-current text-yellow-400"
                     : "text-gray-300 dark:text-gray-600"
                 }`}

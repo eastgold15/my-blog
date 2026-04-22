@@ -3,6 +3,8 @@
  * 结合 GitHub API 和 MDX 处理
  */
 
+const mdReg = /\.(md|mdx)$/;
+
 import type { BlogCategory, BlogPost } from "@/types/blog";
 import { fetchAllMarkdownFiles, getFileContent } from "./github";
 import { generateSlug, parseBlogPost } from "./mdx";
@@ -52,7 +54,7 @@ export async function getAllPosts(): Promise<BlogPost[]> {
       const slug = generateSlug(file.name, category);
       posts.push({
         slug,
-        title: file.name.replace(/\.(md|mdx)$/, ""),
+        title: file.name.replace(mdReg, ""),
         content: "",
         excerpt: "内容加载中...",
         date: new Date().toISOString(),

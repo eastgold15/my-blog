@@ -8,8 +8,8 @@ import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
 import remarkGfm from "remark-gfm";
-import { PostMeta } from "@/components/blog/PostMeta";
-import { PostNavigation } from "@/components/blog/PostNavigation";
+import { PostMeta } from "@/components/blog/post-meta";
+import { PostNavigation } from "@/components/blog/post-navigation";
 import { getAllPosts, getPostBySlug, getPostNavigation } from "@/lib/posts";
 import "highlight.js/styles/github-dark.css";
 
@@ -87,6 +87,7 @@ export default async function PostPage({
         href="/"
       >
         <svg
+          aria-hidden="true"
           className="mr-1 h-4 w-4"
           fill="none"
           stroke="currentColor"

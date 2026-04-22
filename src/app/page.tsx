@@ -4,7 +4,7 @@
  */
 
 import Link from "next/link";
-import { PostCard } from "@/components/blog/PostCard";
+import { PostCard } from "@/components/blog/post-card";
 import { getAllCategories, getAllPosts } from "@/lib/posts";
 
 export default async function HomePage() {

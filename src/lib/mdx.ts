@@ -5,11 +5,12 @@
 
 import type { BlogFrontmatter, BlogPost } from "@/types/blog";
 
+const mdReg = /\.(md|mdx)$/;
+const frontmatterRegex = /^---\s*\n([\s\S]*?)\n---\s*\n/;
 /**
  * 从 Markdown 内容中提取 frontmatter
  */
 export function extractFrontmatter(content: string): BlogFrontmatter {
-  const frontmatterRegex = /^---\s*\n([\s\S]*?)\n---\s*\n/;
   const match = content.match(frontmatterRegex);
 
   if (!match) {
@@ -70,6 +71,8 @@ export function extractFrontmatter(content: string): BlogFrontmatter {
       case "description":
         frontmatter.description = value;
         break;
+      default:
+        break;
     }
   }
 
@@ -80,7 +83,7 @@ export function extractFrontmatter(content: string): BlogFrontmatter {
  * 移除 frontmatter，返回纯内容
  */
 export function removeFrontmatter(content: string): string {
-  return content.replace(/^---\s*\n[\s\S]*?\n---\s*\n/, "");
+  return content.replace(frontmatterRegex, "");
 }
 
 /**
@@ -101,7 +104,7 @@ export function generateExcerpt(content: string, maxLength = 200): string {
     return cleanContent;
   }
 
-  return cleanContent.slice(0, maxLength).trim() + "...";
+  return `${cleanContent.slice(0, maxLength).trim()}...`;
 }
 
 /**
@@ -120,7 +123,7 @@ export function calculateReadingTime(content: string): number {
  */
 export function generateSlug(filename: string, category: string): string {
   const baseName = filename
-    .replace(/\.(md|mdx)$/, "")
+    .replace(mdReg, "")
     .toLowerCase()
     .replace(/\s+/g, "-")
     .replace(/[^\w\-一-龥]/g, "");
@@ -145,7 +148,7 @@ export function parseBlogPost(
   const cleanContent = removeFrontmatter(content);
 
   return {
-    title: frontmatter.title || filename.replace(/\.(md|mdx)$/, ""),
+    title: frontmatter.title || filename.replace(mdReg, ""),
     content: cleanContent,
     excerpt: frontmatter.description || generateExcerpt(content),
     date: frontmatter.date || new Date().toISOString(),

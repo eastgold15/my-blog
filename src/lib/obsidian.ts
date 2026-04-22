@@ -9,7 +9,7 @@
  */
 export function convertWikiLinks(content: string): string {
   // [[文件名]] -> [文件名](/posts/file-name)
-  return content.replace(/\[\[([^\]]+)\]\]/g, (match, linkText) => {
+  return content.replace(/\[\[([^\]]+)\]\]/g, (_match, linkText) => {
     const [text, alias] = linkText.split("|");
     const slug = text
       .toLowerCase()
@@ -28,7 +28,7 @@ export function convertEmbeds(content: string): string {
   // ![[文件名]] -> <!-- 嵌入: 文件名 -->
   return content.replace(
     /!\[\[([^\]]+)\]\]/g,
-    (match, fileName) => `<!-- 嵌入内容: ${fileName} -->`
+    (_match, fileName) => `<!-- 嵌入内容: ${fileName} -->`
   );
 }
 

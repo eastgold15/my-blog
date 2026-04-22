@@ -16,16 +16,16 @@ async function handleResponse<T>(response: Response): Promise<T> {
 
   return response.json();
 }
-
+const baseUrlReg = /\/$/;
 /**
  * 核心封装：支持自动注入 Token 和 Next.js 缓存
  */
+
 export const ghFetch = async <T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> => {
-  // biome-ignore lint/performance/useTopLevelRegex: <explanation>
-  const baseUrl = config.github.apiBaseUrl.replace(/\/$/, "");
+  const baseUrl = config.github.apiBaseUrl.replace(baseUrlReg, "");
   const cleanEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
 
   const url = `${baseUrl}${cleanEndpoint}`;

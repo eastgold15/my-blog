@@ -2,12 +2,13 @@
  * 构建诊断页面 - 用于检查生产环境数据获取
  */
 
+import type { GitHubFile } from "@/lib/github";
 import { fetchAllMarkdownFiles } from "@/lib/github";
 
 export const dynamic = "force-static";
 
 export default async function BuildDiagnosticPage() {
-  let files: any[] = [];
+  let files: Array<{ category: string; file: GitHubFile }> = [];
   let error: string | null = null;
   const envInfo = {
     owner: process.env.NEXT_PUBLIC_GITHUB_OWNER,
@@ -19,8 +20,8 @@ export default async function BuildDiagnosticPage() {
 
   try {
     files = await fetchAllMarkdownFiles();
-  } catch (e: any) {
-    error = e.message;
+  } catch (e) {
+    error = e instanceof Error ? e.message : "未知错误";
   }
 
   return (
@@ -49,7 +50,7 @@ export default async function BuildDiagnosticPage() {
           <p className="text-yellow-600">没有获取到任何文件！请检查：</p>
         ) : (
           <ul className="list-disc pl-6">
-            {files.slice(0, 20).map((item: any) => (
+            {files.slice(0, 20).map((item) => (
               <li key={item.file.path}>
                 {item.category} / {item.file.name}
               </li>
