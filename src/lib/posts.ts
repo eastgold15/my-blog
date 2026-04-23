@@ -5,7 +5,7 @@
 
 const mdReg = /\.(md|mdx)$/;
 
-import type { BlogPost, BlogCategory, PostNavigationType } from "@/types/blog";
+import type { BlogCategory, BlogPost, PostNavigationType } from "@/types/blog";
 import { fetchAllMarkdownFiles, getFileContent } from "./github";
 import { generateSlug, parseBlogPost } from "./mdx";
 import { processObsidianSyntax } from "./obsidian";

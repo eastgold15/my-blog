@@ -36,7 +36,17 @@ export interface PostNavigationType {
 }
 
 export interface BlogCategory {
+  count: number;
   name: string;
   slug: string;
-  count: number;
+}
+
+export interface BlogFrontmatter {
+  author?: string;
+  category?: string;
+  date?: string;
+  description?: string;
+  draft?: boolean;
+  tags?: string[];
+  title?: string;
 }

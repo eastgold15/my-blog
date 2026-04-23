@@ -81,6 +81,9 @@ function buildHierarchy(headings: TocItem[]): TocItem[] {
         parent.children = [];
       }
       if (parent) {
+        if (!parent.children) {
+          parent.children = [];
+        }
         parent.children.push(node);
       }
     }
