@@ -3,11 +3,11 @@
  * 在服务端获取导航数据并传递给客户端 Header 组件
  */
 
-import { Header as ClientHeader } from "@/components/layout/header";
+import { Header } from "@/components/layout/header";
 import { getNavigation } from "@/lib/navigation";
 
 export async function HeaderWrapper() {
   const navItems = await getNavigation();
 
-  return <ClientHeader navItems={navItems} />;
+  return <Header navItems={navItems} />;
 }

@@ -55,7 +55,8 @@ export function generateTOC(content: string): TocItem[] {
  * 构建层级结构
  * 将扁平的标题列表转换为树形结构
  */
-function buildHierarchy(headings: TocItem[]): TocItem[] {
+
+function  buildHierarchy(headings: TocItem[]): TocItem[] {
   const result: TocItem[] = [];
   const stack: { item: TocItem; level: number }[] = [];
 

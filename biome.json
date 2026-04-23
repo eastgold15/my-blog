@@ -14,13 +14,15 @@
     "indentStyle": "space",
     "indentWidth": 2
   },
+  
   "linter": {
     "enabled": true,
     "rules": {
       "recommended": true,
       "suspicious": {
         "noUnknownAtRules": "off"
-      }
+      },
+      "complexity":"off"
     },
     "domains": {
       "next": "recommended",

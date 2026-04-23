@@ -89,7 +89,7 @@ export default async function PostPage({
 
   return (
     <div className="w-full px-4 py-12 sm:px-6 lg:px-8">
-      <div className="mx-auto w-full max-w-[1800px]">
+      <div className="mx-auto w-full max-w-450">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
           {/* 左侧目录导航 - 只在桌面端显示 */}
           {toc.length > 0 && (
