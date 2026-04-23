@@ -1,7 +1,6 @@
 /**
  * 博客文章元数据组件
  */
-
 import type { BlogPost } from "@/types/blog";
 
 export function PostMeta({ post }: { post: BlogPost }) {

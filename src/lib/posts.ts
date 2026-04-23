@@ -5,7 +5,7 @@
 
 const mdReg = /\.(md|mdx)$/;
 
-import type { BlogCategory, BlogPost } from "@/types/blog";
+import type { BlogPost, BlogCategory, PostNavigationType } from "@/types/blog";
 import { fetchAllMarkdownFiles, getFileContent } from "./github";
 import { generateSlug, parseBlogPost } from "./mdx";
 import { processObsidianSyntax } from "./obsidian";
@@ -138,7 +138,7 @@ export async function getPostsByCategory(
  */
 export async function getPostNavigation(
   currentSlug: string
-): Promise<{ prev?: BlogPost; next?: BlogPost }> {
+): Promise<PostNavigationType> {
   const posts = await getAllPosts();
   const currentIndex = posts.findIndex((post) => post.slug === currentSlug);
 

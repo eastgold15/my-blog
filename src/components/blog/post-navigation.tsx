@@ -3,7 +3,7 @@
  */
 
 import Link from "next/link";
-import type { PostNavigation as PostNavigationType } from "@/types/blog";
+import type { PostNavigationType } from "@/types/blog";
 
 export function PostNavigation({
   navigation,
