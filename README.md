@@ -47,3 +47,8 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 5. 填写环境变量文件
 
 自己部署
+
+
+## 环境变量
+
+NEXT_PUBLIC_GITHUB_BRANCH 填写自己的仓库的分支名
