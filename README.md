@@ -37,3 +37,13 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+
+
+1. 首先安装 obsidian：https://obsidian.md/
+2. 创建一个obsidian vault，并设置git仓库
+3. 安装obsidian git插件 
+4. 创建1个github仓库，作为为obsidian的 vault 的 远程仓库
+5. 填写环境变量文件
+
+自己部署
