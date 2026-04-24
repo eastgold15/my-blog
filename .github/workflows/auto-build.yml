@@ -7,6 +7,10 @@ on:
   # 同时支持手动触发
   workflow_dispatch:
 
+permissions:
+  id-token: write # 这是获取 OIDC 令牌所必需的
+  contents: read  # 这是 actions/checkout 等步骤所必需的
+
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
