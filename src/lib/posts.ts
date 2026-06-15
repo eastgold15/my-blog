@@ -29,7 +29,7 @@ export async function getAllPosts(): Promise<BlogPost[]> {
     try {
       const content = await getFileContent(file.path);
 
-      // 处理 Obsidian 语法
+      // 处理 Obsidian 语法（标签和块引用）
       const processedContent = processObsidianSyntax(content);
 
       const postData = parseBlogPost(file.name, category, processedContent);

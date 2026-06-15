@@ -1,96 +1,49 @@
 /**
  * MDX 处理工具
  * 解析 Markdown 内容，提取 frontmatter，生成摘要
+ *
+ * 使用 gray-matter 替代手写 frontmatter 解析
+ * 使用 reading-time 替代手算阅读时间
  */
 
+import matter from "gray-matter";
+import readingTime from "reading-time";
 import type { BlogFrontmatter, BlogPost } from "@/types/blog";
 
 const mdReg = /\.(md|mdx)$/;
-const frontmatterRegex = /^---\s*\n([\s\S]*?)\n---\s*\n/;
+
 /**
- * 从 Markdown 内容中提取 frontmatter
+ * 提取 frontmatter（使用 gray-matter）
  */
 export function extractFrontmatter(content: string): BlogFrontmatter {
-  const match = content.match(frontmatterRegex);
+  const { data } = matter(content);
 
-  if (!match) {
-    return {};
-  }
-
-  const yamlContent = match[1];
-  const frontmatter: BlogFrontmatter = {};
-
-  // 简单的 YAML 解析（支持 key: value 格式）
-  const lines = yamlContent.split("\n");
-  for (const line of lines) {
-    const colonIndex = line.indexOf(":");
-    if (colonIndex === -1) {
-      continue;
-    }
-
-    const key = line.slice(0, colonIndex).trim();
-    let value = line.slice(colonIndex + 1).trim();
-
-    // 处理不同的值类型
-    if (value.startsWith('"') && value.endsWith('"')) {
-      value = value.slice(1, -1);
-    } else if (value === "true") {
-      value = "true";
-    } else if (value === "false") {
-      value = "false";
-    }
-
-    // 处理数组格式（tags: [tag1, tag2]）
-    if (value.startsWith("[") && value.endsWith("]")) {
-      const arrayContent = value.slice(1, -1);
-      value = arrayContent
-        .split(",")
-        .map((item) => item.trim().replace(/^['"]|['"]$/g, ""))
-        .join(",");
-    }
-
-    switch (key) {
-      case "title":
-        frontmatter.title = value;
-        break;
-      case "date":
-        frontmatter.date = value;
-        break;
-      case "category":
-        frontmatter.category = value;
-        break;
-      case "tags":
-        frontmatter.tags = value.split(",").map((t) => t.trim());
-        break;
-      case "author":
-        frontmatter.author = value;
-        break;
-      case "draft":
-        frontmatter.draft = value === "true";
-        break;
-      case "description":
-        frontmatter.description = value;
-        break;
-      default:
-        break;
-    }
-  }
-
-  return frontmatter;
+  return {
+    title: data.title,
+    date: data.date,
+    category: data.category,
+    tags: Array.isArray(data.tags) ? data.tags : [],
+    author: data.author,
+    draft: data.draft === true,
+    description: data.description,
+  };
 }
 
 /**
  * 移除 frontmatter，返回纯内容
  */
 export function removeFrontmatter(content: string): string {
-  return content.replace(frontmatterRegex, "");
+  const { content: body } = matter(content);
+  return body;
 }
 
 /**
  * 生成文章摘要（从内容中提取前 N 个字符）
  */
 export function generateExcerpt(content: string, maxLength = 200): string {
-  const cleanContent = removeFrontmatter(content)
+  const { content: body } = matter(content);
+
+  const cleanContent = body
     // 移除 Markdown 语法
     .replace(/#{1,6}\s+/g, "")
     .replace(/\*\*/g, "")
@@ -108,13 +61,12 @@ export function generateExcerpt(content: string, maxLength = 200): string {
 }
 
 /**
- * 计算阅读时间（分钟）
+ * 计算阅读时间（使用 reading-time）
  */
 export function calculateReadingTime(content: string): number {
-  const cleanContent = removeFrontmatter(content);
-  const wordsPerMinute = 200; // 中文阅读速度
-  const wordCount = cleanContent.length;
-  return Math.ceil(wordCount / wordsPerMinute);
+  const { content: body } = matter(content);
+  const result = readingTime(body, { wordsPerMinute: 200 });
+  return Math.ceil(result.minutes);
 }
 
 /**

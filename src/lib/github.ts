@@ -1,19 +1,30 @@
 /**
  * GitHub API 工具函数
- * 用于获取远程仓库的文件内容
+ * 使用 @octokit/rest 替代手写 fetch 封装
  */
 
+import { Octokit } from "@octokit/rest";
 import micromatch from "micromatch";
 import { config } from "@/configs/config";
 import type { NavItem } from "@/types/navigation";
-import { ghFetch } from "./api";
+
+// Octokit 实例（懒初始化）
+let _octokit: Octokit | null = null;
+
+function getOctokit(): Octokit {
+  if (!_octokit) {
+    _octokit = new Octokit({
+      auth: config.github.githubToken || undefined,
+    });
+  }
+  return _octokit;
+}
 
 export interface GitHubFile {
   name: string;
   path: string;
   size?: number;
   type: "file" | "dir";
-  url?: string;
 }
 
 export interface GitHubTreeItem {
@@ -21,18 +32,6 @@ export interface GitHubTreeItem {
   path: string;
   size?: number;
   type: string;
-  url?: string;
-}
-
-export interface GitHubTreeResponse {
-  sha: string;
-  tree: GitHubTreeItem[];
-  truncated: boolean;
-}
-
-export interface GitHubContent {
-  content: string;
-  encoding: string;
 }
 
 // 博客目录名称（可配置）
@@ -59,38 +58,70 @@ export function shouldFilterFile(path: string): boolean {
   return false;
 }
 
-// 获取文件列表
-export function getRepoFiles(path: string) {
-  const endpoint = `/repos/${config.github.owner}/${config.github.repo}/contents/${path.trim()}?ref=${config.github.branch}`;
-  return ghFetch<GitHubFile[]>(endpoint);
-}
-
-// 获取单个文件内容（利用 headers 覆盖实现 raw 读取）
-export function getFileContent(path: string) {
-  const endpoint = `/repos/${config.github.owner}/${config.github.repo}/contents/${path.trim()}?ref=${config.github.branch}`;
-  return ghFetch<string>(endpoint, {
-    headers: { Accept: "application/vnd.github.v3.raw" },
-  });
-}
-
 /**
- * 使用 Git Tree API 一次性获取整个仓库的文件树（只请求一次！）
- * 这是更高效的实现方式，避免递归调用导致的多次 API 请求
+ * 使用 GitHub Tree API 一次性获取整个仓库的文件树
  */
 export async function getRepoTree(): Promise<GitHubTreeItem[]> {
-  const endpoint = `/repos/${config.github.owner}/${config.github.repo}/git/trees/${config.github.branch}?recursive=1`;
-  const response = await ghFetch<GitHubTreeResponse>(endpoint);
+  const octokit = getOctokit();
+  const { owner, repo, branch } = config.github;
 
-  // 如果树被截断（文件太多），需要分页处理
-  if (response.truncated) {
+  const response = await octokit.rest.git.getTree({
+    owner,
+    repo,
+    tree_sha: branch,
+    recursive: "1",
+  });
+
+  if (response.data.truncated) {
     console.warn("[GitHub] 文件树被截断，部分文件可能未获取到");
   }
 
-  return response.tree;
+  return response.data.tree.map((item) => ({
+    mode: item.mode || "",
+    path: item.path || "",
+    size: item.size,
+    type: item.type || "",
+  }));
 }
 
 /**
- * 获取所有 Markdown 文件（使用 Tree API，只需一次请求！）
+ * 获取单个文件内容（原始内容）
+ */
+export async function getFileContent(path: string): Promise<string> {
+  const octokit = getOctokit();
+  const { owner, repo, branch } = config.github;
+
+  const response = await octokit.rest.repos.getContent({
+    owner,
+    repo,
+    path: path.trim(),
+    ref: branch,
+    mediaType: { format: "raw" },
+  });
+
+  // raw 格式返回的是字符串
+  return response.data as unknown as string;
+}
+
+/**
+ * 获取文件列表
+ */
+export function getRepoFiles(path: string) {
+  const octokit = getOctokit();
+  const { owner, repo, branch } = config.github;
+
+  return octokit.rest.repos
+    .getContent({
+      owner,
+      repo,
+      path: path.trim(),
+      ref: branch,
+    })
+    .then((res) => res.data as unknown as GitHubFile[]);
+}
+
+/**
+ * 获取所有 Markdown 文件（使用 Tree API，只需一次请求）
  */
 export async function fetchAllMarkdownFiles(): Promise<
   Array<{ category: string; file: GitHubFile }>
@@ -123,7 +154,6 @@ export async function fetchAllMarkdownFiles(): Promise<
           path: item.path,
           type: "file",
           size: item.size,
-          url: item.url,
         },
       });
     }
@@ -156,15 +186,15 @@ export async function buildNavigationTree(): Promise<NavItem[]> {
   // 为每个第一层目录创建导航项
   for (const dir of Array.from(firstLevelDirs).sort()) {
     const navItem: NavItem = {
-      label: dir.replace(NUM_PREFIX_REGEX, ""), // 显示时移除数字前缀
-      slug: dir === BLOG_DIR ? "/posts" : `/${dir}`, // 使用原始路径作为 URL
+      label: dir.replace(NUM_PREFIX_REGEX, ""),
+      slug: dir === BLOG_DIR ? "/posts" : `/${dir}`,
       isBlog: dir === BLOG_DIR,
       path: dir,
       children: [],
     };
 
     // 获取子目录
-    const children = await getChildren(dir, tree);
+    const children = getChildren(dir, tree);
     if (children.length > 0) {
       navItem.children = children;
     }
@@ -193,8 +223,8 @@ function getChildren(parentPath: string, tree: GitHubTreeItem[]): NavItem[] {
         }
 
         children.push({
-          label: childName.replace(NUM_PREFIX_REGEX, ""), // 显示时移除数字前缀
-          slug: `/${item.path}`, // 使用原始路径作为 URL
+          label: childName.replace(NUM_PREFIX_REGEX, ""),
+          slug: `/${item.path}`,
           path: item.path,
         });
       }
@@ -207,7 +237,9 @@ function getChildren(parentPath: string, tree: GitHubTreeItem[]): NavItem[] {
 /**
  * 获取指定目录下的所有文件
  */
-export async function getAllFilesInDir(dirPath: string): Promise<GitHubFile[]> {
+export async function getAllFilesInDir(
+  dirPath: string,
+): Promise<GitHubFile[]> {
   const tree = await getRepoTree();
   const files: GitHubFile[] = [];
 
@@ -228,7 +260,6 @@ export async function getAllFilesInDir(dirPath: string): Promise<GitHubFile[]> {
         path: item.path,
         type: "file",
         size: item.size,
-        url: item.url,
       });
     }
   }

@@ -1,6 +1,8 @@
 /**
  * 目录（Table of Contents）生成工具
  * 从 Markdown 内容中提取标题，生成目录结构
+ *
+ * 使用 github-slugger 生成 ID（与 rehype-slug 相同算法，锚点 ID 天然一致）
  */
 
 import GithubSlugger from "github-slugger";
@@ -18,7 +20,6 @@ export interface TocItem {
 
 /**
  * 从 Markdown 内容生成目录
- * 使用 github-slugger 生成与 GitHub 一致的 ID
  */
 export function generateTOC(content: string): TocItem[] {
   const headings: TocItem[] = [];
@@ -31,7 +32,6 @@ export function generateTOC(content: string): TocItem[] {
     const level = match[1].length;
     const title = match[2].trim();
 
-    // 跳过空标题
     if (!title) {
       continue;
     }
@@ -55,15 +55,13 @@ export function generateTOC(content: string): TocItem[] {
  * 构建层级结构
  * 将扁平的标题列表转换为树形结构
  */
-
-function  buildHierarchy(headings: TocItem[]): TocItem[] {
+function buildHierarchy(headings: TocItem[]): TocItem[] {
   const result: TocItem[] = [];
   const stack: { item: TocItem; level: number }[] = [];
 
   for (const heading of headings) {
     const node: TocItem = { ...heading, children: [] };
 
-    // 找到合适的父节点
     while (stack.length > 0) {
       const top = stack.at(-1);
       if (!top?.level || top.level < heading.level) {
@@ -73,14 +71,9 @@ function  buildHierarchy(headings: TocItem[]): TocItem[] {
     }
 
     if (stack.length === 0) {
-      // 没有父节点，添加到根级别
       result.push(node);
     } else {
-      // 有父节点，添加到父节点的 children
       const parent = stack.at(-1)?.item;
-      if (parent && !parent.children) {
-        parent.children = [];
-      }
       if (parent) {
         if (!parent.children) {
           parent.children = [];
@@ -93,30 +86,4 @@ function  buildHierarchy(headings: TocItem[]): TocItem[] {
   }
 
   return result;
-}
-
-/**
- * 获取所有标题（扁平列表）
- */
-export function getAllHeadings(content: string): TocItem[] {
-  return generateTOC(content);
-}
-
-/**
- * 获取指定级别的最大深度
- */
-export function getMaxDepth(toc: TocItem[]): number {
-  let maxDepth = 0;
-
-  function traverse(items: TocItem[], depth: number) {
-    for (const item of items) {
-      maxDepth = Math.max(maxDepth, depth);
-      if (item.children && item.children.length > 0) {
-        traverse(item.children, depth + 1);
-      }
-    }
-  }
-
-  traverse(toc, 1);
-  return maxDepth;
 }

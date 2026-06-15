@@ -1,28 +1,27 @@
 /**
  * 博客文章详情页
- * 动态路由渲染 MDX 内容
- * 左侧显示目录，右侧显示内容
+ * 三列布局：左章节导航 | 中内容 | 右目录
  */
 
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
+import rehypeSlug from "rehype-slug";
 import remarkGfm from "remark-gfm";
+import remarkObsidian from "remark-obsidian";
 import { PostMeta } from "@/components/blog/post-meta";
 import { PostNavigation } from "@/components/blog/post-navigation";
 import { Code } from "@/components/content/code";
 import { TableOfContents } from "@/components/content/table-of-contents";
-import { getAllPosts, getPostBySlug, getPostNavigation } from "@/lib/posts";
-import { rehypeSlugCustom } from "@/lib/rehype-slug-custom";
+import { ChapterNav } from "@/components/content/chapter-nav";
+import { getAllPosts } from "@/lib/posts";
 import { generateTOC } from "@/lib/toc";
 import "highlight.js/styles/github-dark.css";
 
 // 生成静态参数
 export async function generateStaticParams() {
   const posts = await getAllPosts();
-
-  // 返回所有 slug
   return posts.map((post) => ({ slug: String(post.slug) }));
 }
 
@@ -33,12 +32,13 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const post = await getPostBySlug(slug);
+  const allPosts = await getAllPosts();
+  const post = allPosts.find(
+    (p) => p.slug === slug || p.slug === decodeURIComponent(slug)
+  );
 
   if (!post) {
-    return {
-      title: "文章未找到",
-    };
+    return { title: "文章未找到" };
   }
 
   return {
@@ -53,7 +53,11 @@ export default async function PostPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const post = await getPostBySlug(slug);
+  const decodedSlug = decodeURIComponent(slug);
+
+  // 一次性获取所有文章，避免重复请求
+  const allPosts = await getAllPosts();
+  const post = allPosts.find((p) => p.slug === slug || p.slug === decodedSlug);
 
   if (!post) {
     notFound();
@@ -82,46 +86,70 @@ export default async function PostPage({
     );
   }
 
-  const navigation = await getPostNavigation(slug);
+  // 获取同分类文章（用于章节导航）
+  const categoryPosts = allPosts
+    .filter((p) => p.category === post.category)
+    .map((p) => ({ slug: p.slug, title: p.title }));
+
+  // 文章导航（上一篇/下一篇）
+  const currentIndex = allPosts.findIndex(
+    (p) => p.slug === slug || p.slug === decodedSlug
+  );
+  const navigation = {
+    prev: currentIndex > 0 ? allPosts[currentIndex - 1] : undefined,
+    next:
+      currentIndex < allPosts.length - 1
+        ? allPosts[currentIndex + 1]
+        : undefined,
+  };
 
   // 生成目录
   const toc = generateTOC(post.content);
 
   return (
-    <div className="w-full px-4 py-12 sm:px-6 lg:px-8">
+    <div className="w-full px-4 py-8 sm:px-6 lg:px-8">
       <div className="mx-auto w-full max-w-450">
+        {/* 返回首页链接 */}
+        <Link
+          className="mb-6 inline-flex items-center text-gray-600 text-sm transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+          href="/"
+        >
+          <svg
+            aria-hidden="true"
+            className="mr-1 h-4 w-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M10 19l-7-7m0 0l7-7m-7 7h18"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+            />
+          </svg>
+          返回首页
+        </Link>
+
+        {/* 三列布局：章节导航 | 内容 | 目录 */}
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
-          {/* 左侧目录导航 - 只在桌面端显示 */}
-          {toc.length > 0 && (
+          {/* 左侧章节导航 */}
+          {categoryPosts.length > 1 && (
             <aside className="hidden lg:col-span-2 lg:block">
-              <TableOfContents title="目录" toc={toc} />
+              <ChapterNav
+                categoryName={post.category}
+                currentSlug={post.slug}
+                posts={categoryPosts}
+              />
             </aside>
           )}
 
-          {/* 右侧文章内容 */}
-          <article className="lg:col-span-10">
-            {/* 返回首页链接 */}
-            <Link
-              className="mb-8 inline-flex items-center text-gray-600 text-sm transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-              href="/"
-            >
-              <svg
-                aria-hidden="true"
-                className="mr-1 h-4 w-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                />
-              </svg>
-              返回首页
-            </Link>
-
+          {/* 中间文章内容 */}
+          <article
+            className={
+              categoryPosts.length > 1 ? "lg:col-span-8" : "lg:col-span-10"
+            }
+          >
             {/* 文章标题 */}
             <header className="mb-8">
               <h1 className="mb-4 font-bold text-4xl text-gray-900 dark:text-white">
@@ -136,8 +164,8 @@ export default async function PostPage({
                 components={{
                   code: Code,
                 }}
-                rehypePlugins={[rehypeHighlight, rehypeSlugCustom]}
-                remarkPlugins={[remarkGfm]}
+                remarkPlugins={[remarkGfm, remarkObsidian]}
+                rehypePlugins={[rehypeHighlight, rehypeSlug]}
               >
                 {post.content}
               </ReactMarkdown>
@@ -162,6 +190,13 @@ export default async function PostPage({
             {/* 文章导航 */}
             <PostNavigation navigation={navigation} />
           </article>
+
+          {/* 右侧目录导航 */}
+          {toc.length > 0 && (
+            <aside className="hidden lg:col-span-2 lg:block">
+              <TableOfContents title="目录" toc={toc} />
+            </aside>
+          )}
         </div>
       </div>
     </div>
