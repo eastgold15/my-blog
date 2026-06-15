@@ -21,7 +21,7 @@ bun run start    # Serve the static export locally
 - **Package Manager**: Bun
 - **Styling**: Tailwind CSS v4
 - **Formatter/Linter**: Biome + Ultracite
-- **Deployment**: GitHub Pages (static export) + Vercel
+- **Deployment**: GitHub Pages (static export)
 
 ## Project Architecture
 
@@ -82,10 +82,9 @@ src/components/
 
 ### Build / Deployment
 
-- **Static Export**: `next.config.ts` outputs `export` mode (unless Vercel or dev). GitHub Pages receives pre-rendered HTML in `out/`.
+- **Static Export**: `next.config.ts` outputs `export` mode (unless dev). GitHub Pages receives pre-rendered HTML in `out/`.
 - **GitHub Actions**: `.github/workflows/deploy.yml` — on push to `main`, installs deps with Bun, builds, deploys to Pages.
-- **Vercel**: `vercel.json` — uses `bun run build` with `out/` as output directory.
-- `basePath` is set to `/my-blog` only on GitHub Actions (non-Vercel) builds.
+- `basePath` is set to `/my-blog` on GitHub Actions builds.
 
 ### File Filtering
 

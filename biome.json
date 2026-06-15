@@ -14,19 +14,11 @@
     "indentStyle": "space",
     "indentWidth": 2
   },
-  
-  "linter": {
-    "enabled": true,
+   "linter": {
     "rules": {
-      "recommended": true,
-      "suspicious": {
-        "noUnknownAtRules": "off"
-      },
-      "complexity":"off"
-    },
-    "domains": {
-      "next": "recommended",
-      "react": "recommended"
+      "complexity": {
+        "noExcessiveCognitiveComplexity": "error"
+      }
     }
   },
   "assist": {
