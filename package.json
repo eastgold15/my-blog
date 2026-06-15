@@ -1,17 +1,4 @@
 {
-  "name": "my-blog",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "npx serve@latest out",
-    "lint": "biome check",
-    "format": "biome format --write",
-    "typeCheck": "npx tsc --noEmit",
-    "check": "ultracite check",
-    "fix": "ultracite fix"
-  },
   "dependencies": {
     "@mdx-js/loader": "^3.1.1",
     "@mdx-js/react": "^3.1.1",
@@ -32,17 +19,32 @@
     "remark-obsidian": "^1.12.1"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.0",
+    "@biomejs/biome": "2.4.16",
     "@tailwindcss/postcss": "^4.3.1",
     "@types/micromatch": "^4.0.10",
     "@types/node": "^25.9.3",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "babel-plugin-react-compiler": "1.0.0",
+    "lefthook": "^2.1.9",
     "tailwindcss": "^4.3.1",
     "typescript": "^6.0.3",
     "ultracite": "7.8.3"
   },
+  "name": "my-blog",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "npx serve@latest out",
+    "lint": "biome check",
+    "format": "biome format --write",
+    "typeCheck": "npx tsc --noEmit",
+    "check": "ultracite check",
+    "fix": "ultracite fix",
+    "prepare": "lefthook install"
+  },
+  "version": "0.1.0",
+  "private": true,
   "ignoreScripts": [
     "sharp",
     "unrs-resolver"

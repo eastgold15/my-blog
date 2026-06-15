@@ -11,9 +11,8 @@
 import { execSync } from "node:child_process";
 import {
   existsSync,
-  mkdirSync,
-  readFileSync,
   readdirSync,
+  readFileSync,
   rmSync,
   statSync,
 } from "node:fs";
@@ -27,7 +26,9 @@ const CACHE_DIR = config.vault.cacheDir;
 
 function getCloneUrl(): string {
   const { owner, name, githubToken: token } = config.vault;
-  if (!token) return `https://github.com/${owner}/${name}.git`;
+  if (!token) {
+    return `https://github.com/${owner}/${name}.git`;
+  }
   return `https://oauth2:${token}@github.com/${owner}/${name}.git`;
 }
 
@@ -36,7 +37,7 @@ function isRepoReady(cachePath: string): boolean {
   try {
     execSync(`git -C "${cachePath}" rev-parse HEAD --quiet`, {
       stdio: "pipe",
-      timeout: 5_000,
+      timeout: 5000,
     });
     return true;
   } catch {
@@ -62,7 +63,7 @@ export function syncVault(): void {
       console.log("[vault-cache] 检查更新: git fetch + reset");
       execSync(
         `git -C "${cachePath}" fetch origin ${branch} --depth 1 --force`,
-        { stdio: "inherit", timeout: 30_000 },
+        { stdio: "inherit", timeout: 30_000 }
       );
       execSync(`git -C "${cachePath}" reset --hard FETCH_HEAD`, {
         stdio: "inherit",
@@ -95,7 +96,7 @@ export function syncVault(): void {
 
   execSync(
     `git clone --depth 1 --branch ${branch} "${repoUrl}" "${cachePath}"`,
-    { stdio: "inherit", timeout: 90_000 },
+    { stdio: "inherit", timeout: 90_000 }
   );
   console.log("[vault-cache] ✅ 同步完成");
 }
@@ -111,28 +112,30 @@ export function readVaultFile(relativePath: string): string {
 // ─── 文件发现 ────────────────────────────────────────
 
 export interface VaultFile {
-  /** 相对 vault 根目录的路径 */
-  path: string;
-  /** 文件名（含扩展名） */
-  name: string;
-  /** 文件类型 */
-  type: "blog" | "article";
   /** article 所属章节目录（如 "elysia"） */
   chapterDir?: string;
+  /** 文件名（含扩展名） */
+  name: string;
+  /** 相对 vault 根目录的路径 */
+  path: string;
+  /** 文件类型 */
+  type: "blog" | "article";
 }
 
 /** 目录遍历结果 */
 interface WalkEntry {
-  path: string;
   isDir: boolean;
+  path: string;
 }
 
 /** 递归遍历目录 */
-function walkDir(dirPath: string, root: string): WalkEntry[] {
+export function walkDir(dirPath: string, root: string): WalkEntry[] {
   const entries: WalkEntry[] = [];
   const fullPath = join(root, dirPath);
 
-  if (!existsSync(fullPath)) return entries;
+  if (!existsSync(fullPath)) {
+    return entries;
+  }
 
   const items = readdirSync(fullPath);
   for (const item of items) {
@@ -162,14 +165,20 @@ function shouldExclude(name: string): boolean {
 
   // 前缀排除
   for (const prefix of exclude.prefix) {
-    if (name.startsWith(prefix)) return true;
+    if (name.startsWith(prefix)) {
+      return true;
+    }
   }
 
   // 目录名排除
-  if (exclude.dirs.includes(name)) return true;
+  if (exclude.dirs.includes(name)) {
+    return true;
+  }
 
   // 文件名排除
-  if (exclude.files.includes(name)) return true;
+  if (exclude.files.includes(name)) {
+    return true;
+  }
 
   return false;
 }
@@ -185,12 +194,18 @@ export function getAllMarkdownFiles(): VaultFile[] {
   // 处理 dirs.blog → 直接子文件 *.md
   for (const blogDir of config.content.dirs.blog) {
     const fullPath = join(root, blogDir);
-    if (!existsSync(fullPath)) continue;
+    if (!existsSync(fullPath)) {
+      continue;
+    }
 
     const items = readdirSync(fullPath);
     for (const item of items) {
-      if (shouldExclude(item)) continue;
-      if (!item.endsWith(".md") && !item.endsWith(".mdx")) continue;
+      if (shouldExclude(item)) {
+        continue;
+      }
+      if (!(item.endsWith(".md") || item.endsWith(".mdx"))) {
+        continue;
+      }
 
       files.push({
         path: join(blogDir, item),
@@ -203,23 +218,33 @@ export function getAllMarkdownFiles(): VaultFile[] {
   // 处理 dirs.article → 子目录下的 *.md（章节结构）
   for (const articleDir of config.content.dirs.article) {
     const fullParent = join(root, articleDir);
-    if (!existsSync(fullParent)) continue;
+    if (!existsSync(fullParent)) {
+      continue;
+    }
 
     const topItems = readdirSync(fullParent);
     for (const topItem of topItems) {
       // 跳过隐藏/排除项
-      if (shouldExclude(topItem)) continue;
+      if (shouldExclude(topItem)) {
+        continue;
+      }
 
       const fullSubPath = join(fullParent, topItem);
-      if (!statSync(fullSubPath).isDirectory()) continue;
+      if (!statSync(fullSubPath).isDirectory()) {
+        continue;
+      }
 
       const chapterName = topItem.replace(NUM_PREFIX_REGEX, "");
 
       // 读取该子目录下的 *.md 文件
       const subItems = readdirSync(fullSubPath);
       for (const subItem of subItems) {
-        if (shouldExclude(subItem)) continue;
-        if (!subItem.endsWith(".md") && !subItem.endsWith(".mdx")) continue;
+        if (shouldExclude(subItem)) {
+          continue;
+        }
+        if (!(subItem.endsWith(".md") || subItem.endsWith(".mdx"))) {
+          continue;
+        }
 
         files.push({
           path: join(articleDir, topItem, subItem),
@@ -272,8 +297,7 @@ export function buildNavTree(): NavItem[] {
       if (existsSync(fullPath)) {
         const subDirs = readdirSync(fullPath).filter(
           (name) =>
-            !shouldExclude(name) &&
-            statSync(join(fullPath, name)).isDirectory(),
+            !shouldExclude(name) && statSync(join(fullPath, name)).isDirectory()
         );
 
         navItem.children = subDirs.sort().map((sub) => ({
@@ -309,12 +333,18 @@ export function getChapterFiles(chapterPath: string): VaultFile[] {
   const fullPath = join(root, chapterPath);
   const files: VaultFile[] = [];
 
-  if (!existsSync(fullPath)) return files;
+  if (!existsSync(fullPath)) {
+    return files;
+  }
 
   const items = readdirSync(fullPath);
   for (const item of items) {
-    if (shouldExclude(item)) continue;
-    if (!item.endsWith(".md") && !item.endsWith(".mdx")) continue;
+    if (shouldExclude(item)) {
+      continue;
+    }
+    if (!(item.endsWith(".md") || item.endsWith(".mdx"))) {
+      continue;
+    }
 
     files.push({
       path: join(chapterPath, item),

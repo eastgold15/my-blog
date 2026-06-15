@@ -17,7 +17,7 @@ export async function getNavigation(): Promise<NavItem[]> {
     return navCache;
   }
 
-  navCache = buildNavTree();
+  navCache = await buildNavTree();
   return navCache;
 }
 

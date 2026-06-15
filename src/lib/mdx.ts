@@ -95,7 +95,7 @@ export function generateSlug(filename: string, category: string): string {
 export function parseBlogPost(
   filename: string,
   vaultDir: string,
-  content: string,
+  content: string
 ): Omit<BlogPost, "slug"> {
   const frontmatter = extractFrontmatter(content);
   const cleanContent = removeFrontmatter(content);

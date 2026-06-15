@@ -4,8 +4,8 @@
  */
 
 import type { BlogCategory, BlogPost, PostNavigationType } from "@/types/blog";
-import { processObsidianSyntax } from "./obsidian";
 import { generateSlug, parseBlogPost } from "./mdx";
+import { processObsidianSyntax } from "./obsidian";
 
 // vault-cache 懒导入（只在首次调用时触发 git sync）
 let vaultCache: typeof import("./vault-cache");
@@ -48,11 +48,7 @@ export async function getAllPosts(): Promise<BlogPost[]> {
       // vault 中的目录路径用作 fallback category
       vaultDir = getVaultDir(file);
 
-      const postData = parseBlogPost(
-        file.name,
-        vaultDir,
-        processedContent,
-      );
+      const postData = parseBlogPost(file.name, vaultDir, processedContent);
       const slug = generateSlug(file.name, postData.category);
 
       // 跳过草稿
@@ -69,7 +65,7 @@ export async function getAllPosts(): Promise<BlogPost[]> {
       vaultDir = file.path.split("/").slice(0, -1).join("/") || "Uncategorized";
       console.warn(
         `[getAllPosts] ⚠️ 文件处理失败：${file.path}`,
-        error instanceof Error ? error.message : "",
+        error instanceof Error ? error.message : ""
       );
 
       // 创建基本文章对象，确保路由可访问
@@ -86,19 +82,19 @@ export async function getAllPosts(): Promise<BlogPost[]> {
       });
 
       errors.push(
-        `${file.path}: ${error instanceof Error ? error.message : "未知错误"}`,
+        `${file.path}: ${error instanceof Error ? error.message : "未知错误"}`
       );
     }
   }
 
   // 按日期排序
   const sortedPosts = posts.sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
   );
 
   console.log(
     `[getAllPosts] ✅ ${sortedPosts.length} 篇文章就绪`,
-    errors.length > 0 ? `（${errors.length} 个文件有警告）` : "",
+    errors.length > 0 ? `（${errors.length} 个文件有警告）` : ""
   );
 
   postsCache = sortedPosts;
@@ -108,9 +104,7 @@ export async function getAllPosts(): Promise<BlogPost[]> {
 /**
  * 获取 vault 目录路径（用于 fallback category）
  */
-function getVaultDir(
-  file: import("./vault-cache").VaultFile,
-): string {
+function getVaultDir(file: import("./vault-cache").VaultFile): string {
   const parts = file.path.split("/");
   // 去掉文件名，取目录路径
   return parts.slice(0, -1).join("/");
@@ -123,9 +117,7 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
   const decodedSlug = decodeURIComponent(slug);
   const posts = await getAllPosts();
 
-  return (
-    posts.find((p) => p.slug === slug || p.slug === decodedSlug) || null
-  );
+  return posts.find((p) => p.slug === slug || p.slug === decodedSlug) || null;
 }
 
 /**
@@ -155,7 +147,7 @@ export async function getAllCategories(): Promise<BlogCategory[]> {
  * 根据分类获取文章
  */
 export async function getPostsByCategory(
-  category: string,
+  category: string
 ): Promise<BlogPost[]> {
   const posts = await getAllPosts();
   return posts.filter((post) => post.category === category);
@@ -165,14 +157,13 @@ export async function getPostsByCategory(
  * 获取文章导航（上一篇/下一篇）
  */
 export async function getPostNavigation(
-  currentSlug: string,
+  currentSlug: string
 ): Promise<PostNavigationType> {
   const posts = await getAllPosts();
   const currentIndex = posts.findIndex((p) => p.slug === currentSlug);
 
   return {
     prev: currentIndex > 0 ? posts[currentIndex - 1] : undefined,
-    next:
-      currentIndex < posts.length - 1 ? posts[currentIndex + 1] : undefined,
+    next: currentIndex < posts.length - 1 ? posts[currentIndex + 1] : undefined,
   };
 }

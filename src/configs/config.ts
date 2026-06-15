@@ -4,60 +4,60 @@
  */
 
 export interface DirConfig {
-  /** 博客目录：*.md 直接放在目录下（页面只有右侧目录） */
-  blog: string[];
   /** 文章目录：子目录分章节，*.md 在子目录内（左章节导航 + 右目录） */
   article: string[];
+  /** 博客目录：*.md 直接放在目录下（页面只有右侧目录） */
+  blog: string[];
 }
 
 export interface TabConfig {
-  /** 标签名 */
-  label: string;
   /** 链接地址（支持外链） */
   href: string;
+  /** 标签名 */
+  label: string;
 }
 
 export interface ExcludeConfig {
-  /** 文件/目录前缀排除 */
-  prefix: string[];
   /** 目录名排除 */
   dirs: string[];
   /** 特定文件名排除 */
   files: string[];
+  /** 文件/目录前缀排除 */
+  prefix: string[];
 }
 
 export interface ContentConfig {
   /** 内容目录配置 */
   dirs: DirConfig;
-  /** Tab 栏附加标签（外链等） */
-  extraTabs: TabConfig[];
   /** 排除规则 */
   exclude: ExcludeConfig;
+  /** Tab 栏附加标签（外链等） */
+  extraTabs: TabConfig[];
 }
 
 export interface VaultConfig {
-  /** GitHub 仓库全名 */
-  repo: string;
-  /** 仓库所有者 */
-  owner: string;
-  /** 仓库名 */
-  name: string;
   /** 分支 */
   branch: string;
   /** 本地缓存目录（相对项目根目录） */
   cacheDir: string;
   /** GitHub Token */
   githubToken: string;
+  /** 仓库名 */
+  name: string;
+  /** 仓库所有者 */
+  owner: string;
+  /** GitHub 仓库全名 */
+  repo: string;
 }
 
 export interface BlogConfig {
-  vault: VaultConfig;
-  content: ContentConfig;
   blog: {
     title: string;
     description: string;
     author: string;
   };
+  content: ContentConfig;
+  vault: VaultConfig;
 }
 
 export const config: BlogConfig = {

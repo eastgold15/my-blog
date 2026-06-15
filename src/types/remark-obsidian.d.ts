@@ -1,6 +1,6 @@
 declare module "remark-obsidian" {
-  import type { Plugin } from "unified";
   import type { Root } from "mdast";
+  import type { Plugin } from "unified";
 
   const remarkObsidian: Plugin<[], Root>;
   export default remarkObsidian;

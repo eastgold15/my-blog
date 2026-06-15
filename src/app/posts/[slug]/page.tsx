@@ -15,9 +15,9 @@ import remarkGfm from "remark-gfm";
 import remarkObsidian from "remark-obsidian";
 import { PostMeta } from "@/components/blog/post-meta";
 import { PostNavigation } from "@/components/blog/post-navigation";
+import { ChapterNav } from "@/components/content/chapter-nav";
 import { Code } from "@/components/content/code";
 import { TableOfContents } from "@/components/content/table-of-contents";
-import { ChapterNav } from "@/components/content/chapter-nav";
 import { config } from "@/configs/config";
 import { getAllPosts } from "@/lib/posts";
 import { generateTOC } from "@/lib/toc";
@@ -38,7 +38,7 @@ export async function generateMetadata({
   const { slug } = await params;
   const allPosts = await getAllPosts();
   const post = allPosts.find(
-    (p) => p.slug === slug || p.slug === decodeURIComponent(slug),
+    (p) => p.slug === slug || p.slug === decodeURIComponent(slug)
   );
 
   if (!post) {
@@ -53,13 +53,17 @@ export async function generateMetadata({
 
 /** 判断是否为 article 类型（有章节结构的） */
 function isArticle(vaultDir?: string): boolean {
-  if (!vaultDir) return false;
+  if (!vaultDir) {
+    return false;
+  }
   return config.content.dirs.article.some((dir) => vaultDir.startsWith(dir));
 }
 
 /** 从 vaultDir 提取章节名称 */
 function getChapterName(vaultDir?: string): string {
-  if (!vaultDir) return "";
+  if (!vaultDir) {
+    return "";
+  }
   const parts = vaultDir.split("/");
   // 对于 "1-全栈/elysia"，取 "elysia"
   // 对于 "1-全栈/elysia/sub"，取 "elysia/sub"
@@ -79,9 +83,7 @@ export default async function PostPage({
 
   // 一次性获取所有文章
   const allPosts = await getAllPosts();
-  const post = allPosts.find(
-    (p) => p.slug === slug || p.slug === decodedSlug,
-  );
+  const post = allPosts.find((p) => p.slug === slug || p.slug === decodedSlug);
 
   if (!post) {
     notFound();
@@ -116,7 +118,7 @@ export default async function PostPage({
 
   // 文章导航（上一篇/下一篇）
   const currentIndex = allPosts.findIndex(
-    (p) => p.slug === slug || p.slug === decodedSlug,
+    (p) => p.slug === slug || p.slug === decodedSlug
   );
   const navigation = {
     prev: currentIndex > 0 ? allPosts[currentIndex - 1] : undefined,
@@ -193,8 +195,8 @@ export default async function PostPage({
                 components={{
                   code: Code,
                 }}
-                remarkPlugins={[remarkGfm, remarkObsidian]}
                 rehypePlugins={[rehypeHighlight, rehypeSlug]}
+                remarkPlugins={[remarkGfm, remarkObsidian]}
               >
                 {post.content}
               </ReactMarkdown>
