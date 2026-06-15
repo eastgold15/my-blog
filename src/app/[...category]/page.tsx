@@ -157,7 +157,12 @@ async function BookView({
   // 读文件 + 渲染
   const rawContent = readVaultFile(filePath);
   const content = processObsidianSyntax(rawContent);
-  const { data: fm } = matter(content);
+  let fm: Record<string, unknown> = {};
+  try {
+    fm = matter(content).data;
+  } catch {
+    // 文件 frontmatter 格式错误时静默降级
+  }
   const title =
     fm.title ||
     filePath
