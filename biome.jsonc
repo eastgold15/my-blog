@@ -12,6 +12,9 @@
       },
       "performance": {
         "useTopLevelRegex": "off"
+      },
+      "style": {
+        "useBlockStatements": "off"
       }
     }
   },

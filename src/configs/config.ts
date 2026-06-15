@@ -70,8 +70,8 @@ export const config: BlogConfig = {
     githubToken: process.env.BLOG_GITHUB_TOKEN || "",
   },
   blog: {
-    title: "我的博客",
-    description: "分享技术知识和生活感悟",
+    title: "pori博客",
+    description: "无情记下每一笔",
     author: "博主",
   },
   content: {

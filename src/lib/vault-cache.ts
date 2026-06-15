@@ -26,9 +26,7 @@ const CACHE_DIR = config.vault.cacheDir;
 
 function getCloneUrl(): string {
   const { owner, name, githubToken: token } = config.vault;
-  if (!token) {
-    return `https://github.com/${owner}/${name}.git`;
-  }
+  if (!token) return `https://github.com/${owner}/${name}.git`;
   return `https://oauth2:${token}@github.com/${owner}/${name}.git`;
 }
 
@@ -45,12 +43,6 @@ function isRepoReady(cachePath: string): boolean {
   }
 }
 
-/**
- * 同步 vault 到本地缓存
- * - 首次：git clone --depth 1
- * - 后续：git fetch + reset
- * - 多 worker 并发安全
- */
 export function syncVault(): void {
   const cachePath = join(process.cwd(), CACHE_DIR);
   const repoUrl = getCloneUrl();
@@ -122,132 +114,48 @@ export interface VaultFile {
   type: "blog" | "article";
 }
 
-/** 目录遍历结果 */
-interface WalkEntry {
-  isDir: boolean;
-  path: string;
-}
-
-/** 递归遍历目录 */
-export function walkDir(dirPath: string, root: string): WalkEntry[] {
-  const entries: WalkEntry[] = [];
-  const fullPath = join(root, dirPath);
-
-  if (!existsSync(fullPath)) {
-    return entries;
-  }
-
-  const items = readdirSync(fullPath);
-  for (const item of items) {
-    const itemPath = join(dirPath, item);
-    const fullItemPath = join(root, itemPath);
-    const stat = statSync(fullItemPath);
-
-    if (stat.isDirectory()) {
-      entries.push({ path: itemPath, isDir: true });
-      entries.push(...walkDir(itemPath, root));
-    } else {
-      entries.push({ path: itemPath, isDir: false });
-    }
-  }
-
-  return entries;
-}
-
-// 用于移除数字前缀的正则
 const NUM_PREFIX_REGEX = /^\d+-/;
 
-/**
- * 判断文件或目录是否应该被排除
- */
 function shouldExclude(name: string): boolean {
   const { exclude } = config.content;
-
-  // 前缀排除
   for (const prefix of exclude.prefix) {
-    if (name.startsWith(prefix)) {
-      return true;
-    }
+    if (name.startsWith(prefix)) return true;
   }
-
-  // 目录名排除
-  if (exclude.dirs.includes(name)) {
-    return true;
-  }
-
-  // 文件名排除
-  if (exclude.files.includes(name)) {
-    return true;
-  }
-
+  if (exclude.dirs.includes(name)) return true;
+  if (exclude.files.includes(name)) return true;
   return false;
 }
 
-/**
- * 获取所有 Blog/Article markdown 文件
- * 从本地缓存读取，不调用任何 API
- */
 export function getAllMarkdownFiles(): VaultFile[] {
   const root = join(process.cwd(), CACHE_DIR);
   const files: VaultFile[] = [];
 
-  // 处理 dirs.blog → 直接子文件 *.md
   for (const blogDir of config.content.dirs.blog) {
     const fullPath = join(root, blogDir);
-    if (!existsSync(fullPath)) {
-      continue;
-    }
-
+    if (!existsSync(fullPath)) continue;
     const items = readdirSync(fullPath);
     for (const item of items) {
-      if (shouldExclude(item)) {
-        continue;
-      }
-      if (!(item.endsWith(".md") || item.endsWith(".mdx"))) {
-        continue;
-      }
-
-      files.push({
-        path: join(blogDir, item),
-        name: item,
-        type: "blog",
-      });
+      if (shouldExclude(item)) continue;
+      if (!(item.endsWith(".md") || item.endsWith(".mdx"))) continue;
+      files.push({ path: join(blogDir, item), name: item, type: "blog" });
     }
   }
 
-  // 处理 dirs.article → 子目录下的 *.md（章节结构）
   for (const articleDir of config.content.dirs.article) {
     const fullParent = join(root, articleDir);
-    if (!existsSync(fullParent)) {
-      continue;
-    }
-
+    if (!existsSync(fullParent)) continue;
     const topItems = readdirSync(fullParent);
     for (const topItem of topItems) {
-      // 跳过隐藏/排除项
-      if (shouldExclude(topItem)) {
-        continue;
-      }
-
+      if (shouldExclude(topItem)) continue;
       const fullSubPath = join(fullParent, topItem);
-      if (!statSync(fullSubPath).isDirectory()) {
-        continue;
-      }
-
+      if (!statSync(fullSubPath).isDirectory()) continue;
       const chapterName = topItem.replace(NUM_PREFIX_REGEX, "");
-
-      // 读取该子目录下的 *.md 文件
       const subItems = readdirSync(fullSubPath);
       for (const subItem of subItems) {
-        if (shouldExclude(subItem)) {
-          continue;
-        }
-        if (!(subItem.endsWith(".md") || subItem.endsWith(".mdx"))) {
-          continue;
-        }
-
+        if (shouldExclude(subItem)) continue;
+        if (!(subItem.endsWith(".md") || subItem.endsWith(".mdx"))) continue;
         files.push({
-          path: join(articleDir, topItem, subItem),
+          path: `${articleDir}/${topItem}/${subItem}`,
           name: subItem,
           type: "article",
           chapterDir: chapterName,
@@ -261,19 +169,10 @@ export function getAllMarkdownFiles(): VaultFile[] {
 
 // ─── 导航树（Tab 栏）────────────────────────────────
 
-/**
- * 从 config 生成导航 tab 栏
- *
- * 规则：
- * - dirs.blog → 标签名去数字前缀（如 "0-blog" → "blog"），链接到 /
- * - dirs.article → 标签名去数字前缀，子目录作为下拉菜单
- * - extraTabs → 外链标签（新窗口打开）
- */
 export function buildNavTree(): NavItem[] {
-  const root = join(process.cwd(), CACHE_DIR);
   const items: NavItem[] = [];
 
-  // 1. 博客 tab
+  // blog tab
   for (const dir of config.content.dirs.blog) {
     items.push({
       label: dir.replace(NUM_PREFIX_REGEX, ""),
@@ -283,35 +182,16 @@ export function buildNavTree(): NavItem[] {
     });
   }
 
-  // 2. 文章 tab（含子目录下拉）
-  if (existsSync(root)) {
-    for (const dir of config.content.dirs.article) {
-      const fullPath = join(root, dir);
-      const navItem: NavItem = {
-        label: dir.replace(NUM_PREFIX_REGEX, ""),
-        slug: `/${encodeURIComponent(dir)}`,
-        path: dir,
-        children: [],
-      };
-
-      if (existsSync(fullPath)) {
-        const subDirs = readdirSync(fullPath).filter(
-          (name) =>
-            !shouldExclude(name) && statSync(join(fullPath, name)).isDirectory()
-        );
-
-        navItem.children = subDirs.sort().map((sub) => ({
-          label: sub.replace(NUM_PREFIX_REGEX, ""),
-          slug: `/${encodeURIComponent(join(dir, sub))}`,
-          path: join(dir, sub),
-        }));
-      }
-
-      items.push(navItem);
-    }
+  // article tab（无二级菜单，点击直接进书）
+  for (const dir of config.content.dirs.article) {
+    items.push({
+      label: dir.replace(NUM_PREFIX_REGEX, ""),
+      slug: `/${encodeURIComponent(dir)}`,
+      path: dir,
+    });
   }
 
-  // 3. 外部链接 tab
+  // extra tabs
   for (const tab of config.content.extraTabs) {
     items.push({
       label: tab.label,
@@ -323,35 +203,78 @@ export function buildNavTree(): NavItem[] {
   return items;
 }
 
-// ─── 章节文章获取 ────────────────────────────────────
+// ─── 树形结构 ────────────────────────────────────────
+
+export interface TreeNode {
+  children?: TreeNode[];
+  name: string;
+  path: string;
+  type: "file" | "dir";
+}
 
 /**
- * 获取同一章节（同目录）下的所有文章
+ * 递归构建目录树
+ * 用于左侧章节导航的树形展示
  */
-export function getChapterFiles(chapterPath: string): VaultFile[] {
+export function buildFileTree(dirPath: string): TreeNode[] {
   const root = join(process.cwd(), CACHE_DIR);
-  const fullPath = join(root, chapterPath);
-  const files: VaultFile[] = [];
+  const fullPath = join(root, dirPath);
+  if (!existsSync(fullPath)) return [];
 
-  if (!existsSync(fullPath)) {
-    return files;
+  const entries = readdirSync(fullPath).sort();
+  const tree: TreeNode[] = [];
+
+  for (const entry of entries) {
+    if (shouldExclude(entry)) continue;
+    const entryPath = `${dirPath}/${entry}`;
+    const fullEntryPath = join(fullPath, entry);
+
+    try {
+      if (statSync(fullEntryPath).isDirectory()) {
+        tree.push({
+          name: entry.replace(NUM_PREFIX_REGEX, ""),
+          path: entryPath,
+          type: "dir",
+          children: buildFileTree(entryPath),
+        });
+      } else if (entry.endsWith(".md") || entry.endsWith(".mdx")) {
+        tree.push({
+          name: entry.replace(/\.(md|mdx)$/, ""),
+          path: entryPath,
+          type: "file",
+        });
+      }
+    } catch {
+      // skip inaccessible entries
+    }
   }
 
-  const items = readdirSync(fullPath);
-  for (const item of items) {
-    if (shouldExclude(item)) {
-      continue;
-    }
-    if (!(item.endsWith(".md") || item.endsWith(".mdx"))) {
-      continue;
-    }
+  return tree;
+}
 
-    files.push({
-      path: join(chapterPath, item),
-      name: item,
-      type: "article",
-    });
+/**
+ * 获取目录下第一个可用的 .md 文件路径
+ */
+export function getFirstMdFile(dirPath: string): string | null {
+  const root = join(process.cwd(), CACHE_DIR);
+  const fullPath = join(root, dirPath);
+  if (!existsSync(fullPath)) return null;
+
+  const entries = readdirSync(fullPath).sort();
+  for (const entry of entries) {
+    if (shouldExclude(entry)) continue;
+    const fullEntryPath = join(fullPath, entry);
+    try {
+      if (statSync(fullEntryPath).isDirectory()) {
+        const found = getFirstMdFile(`${dirPath}/${entry}`);
+        if (found) return found;
+      } else if (entry.endsWith(".md") || entry.endsWith(".mdx")) {
+        return `${dirPath}/${entry}`;
+      }
+    } catch {
+      throw new Error("不能获取目录下第一个可用的 .md 文件");
+    }
   }
 
-  return files;
+  return null;
 }

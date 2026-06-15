@@ -14,7 +14,12 @@ const mdReg = /\.(md|mdx)$/;
  * 提取 frontmatter（使用 gray-matter）
  */
 export function extractFrontmatter(content: string): BlogFrontmatter {
-  const { data } = matter(content);
+  let data: Record<string, unknown> = {};
+  try {
+    data = matter(content).data;
+  } catch {
+    // YAML 解析失败时返回空对象
+  }
 
   return {
     title: data.title,
