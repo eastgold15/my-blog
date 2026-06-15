@@ -1,39 +1,59 @@
 /**
  * 博客文章数据获取工具
- * 结合 GitHub API 和 MDX 处理
+ * 从本地 vault 缓存读取，0 次 GitHub API 调用
  */
-
-const mdReg = /\.(md|mdx)$/;
 
 import type { BlogCategory, BlogPost, PostNavigationType } from "@/types/blog";
-import { fetchAllMarkdownFiles, getFileContent } from "./github";
-import { generateSlug, parseBlogPost } from "./mdx";
 import { processObsidianSyntax } from "./obsidian";
+import { generateSlug, parseBlogPost } from "./mdx";
+
+// vault-cache 懒导入（只在首次调用时触发 git sync）
+let vaultCache: typeof import("./vault-cache");
+
+async function getVaultCache() {
+  if (!vaultCache) {
+    vaultCache = await import("./vault-cache");
+    vaultCache.syncVault();
+  }
+  return vaultCache;
+}
+
+// 运行时缓存（避免重复读取）
+let postsCache: BlogPost[] | null = null;
 
 /**
- * 获取所有博客文章（带容错处理）
+ * 获取所有博客文章（带运行时缓存）
  */
 export async function getAllPosts(): Promise<BlogPost[]> {
-  console.log("[getAllPosts] 开始获取文章...");
-  const markdownFiles = await fetchAllMarkdownFiles();
-  console.log("[getAllPosts] 获取到 Markdown 文件数:", markdownFiles.length);
+  if (postsCache) {
+    return postsCache;
+  }
+
+  const cache = await getVaultCache();
+  const markdownFiles = cache.getAllMarkdownFiles();
 
   const posts: BlogPost[] = [];
   const errors: string[] = [];
 
-  for (const { category, file } of markdownFiles) {
-    if (!file.path) {
-      continue;
-    }
+  for (const file of markdownFiles) {
+    // vaultDir 在 try 和 catch 中都需要
+    let vaultDir: string;
 
     try {
-      const content = await getFileContent(file.path);
+      const content = cache.readVaultFile(file.path);
 
       // 处理 Obsidian 语法（标签和块引用）
       const processedContent = processObsidianSyntax(content);
 
-      const postData = parseBlogPost(file.name, category, processedContent);
-      const slug = generateSlug(file.name, category);
+      // vault 中的目录路径用作 fallback category
+      vaultDir = getVaultDir(file);
+
+      const postData = parseBlogPost(
+        file.name,
+        vaultDir,
+        processedContent,
+      );
+      const slug = generateSlug(file.name, postData.category);
 
       // 跳过草稿
       if (postData.draft) {
@@ -43,61 +63,69 @@ export async function getAllPosts(): Promise<BlogPost[]> {
       posts.push({
         ...postData,
         slug,
+        vaultDir,
       });
     } catch (error) {
-      // 即使内容获取失败，也创建一个基本文章条目
+      vaultDir = file.path.split("/").slice(0, -1).join("/") || "Uncategorized";
       console.warn(
-        `[getAllPosts] ⚠️ 文件内容获取失败，使用基本信息：${file.path}`
+        `[getAllPosts] ⚠️ 文件处理失败：${file.path}`,
+        error instanceof Error ? error.message : "",
       );
 
-      // 创建基本文章对象，确保至少能生成路由
-      const slug = generateSlug(file.name, category);
+      // 创建基本文章对象，确保路由可访问
+      const slug = generateSlug(file.name, vaultDir);
       posts.push({
         slug,
-        title: file.name.replace(mdReg, ""),
+        title: file.name.replace(/\.(md|mdx)$/, ""),
         content: "",
         excerpt: "内容加载中...",
         date: new Date().toISOString(),
-        category,
+        category: "Uncategorized",
         tags: [],
+        vaultDir,
       });
 
       errors.push(
-        `${file.path}: ${error instanceof Error ? error.message : "未知错误"}`
+        `${file.path}: ${error instanceof Error ? error.message : "未知错误"}`,
       );
     }
   }
 
   // 按日期排序
   const sortedPosts = posts.sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
   );
 
-  console.log("[getAllPosts] 成功解析文章数:", sortedPosts.length);
-  if (errors.length > 0) {
-    console.log("[getAllPosts] 部分文件使用备用数据:", errors.length);
-  }
+  console.log(
+    `[getAllPosts] ✅ ${sortedPosts.length} 篇文章就绪`,
+    errors.length > 0 ? `（${errors.length} 个文件有警告）` : "",
+  );
 
+  postsCache = sortedPosts;
   return sortedPosts;
+}
+
+/**
+ * 获取 vault 目录路径（用于 fallback category）
+ */
+function getVaultDir(
+  file: import("./vault-cache").VaultFile,
+): string {
+  const parts = file.path.split("/");
+  // 去掉文件名，取目录路径
+  return parts.slice(0, -1).join("/");
 }
 
 /**
  * 根据 slug 获取单篇文章
  */
 export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
-  // URL 可能被编码，需要解码
   const decodedSlug = decodeURIComponent(slug);
-  console.log(`[getPostBySlug] 查找 slug: ${slug} -> 解码后：${decodedSlug}`);
-
   const posts = await getAllPosts();
 
-  // 同时检查原始 slug 和解码后的 slug
-  const post = posts.find(
-    (post) => post.slug === slug || post.slug === decodedSlug
+  return (
+    posts.find((p) => p.slug === slug || p.slug === decodedSlug) || null
   );
-
-  console.log(`[getPostBySlug] 找到：${post ? post.title : "未找到"}`);
-  return post || null;
 }
 
 /**
@@ -127,7 +155,7 @@ export async function getAllCategories(): Promise<BlogCategory[]> {
  * 根据分类获取文章
  */
 export async function getPostsByCategory(
-  category: string
+  category: string,
 ): Promise<BlogPost[]> {
   const posts = await getAllPosts();
   return posts.filter((post) => post.category === category);
@@ -137,13 +165,14 @@ export async function getPostsByCategory(
  * 获取文章导航（上一篇/下一篇）
  */
 export async function getPostNavigation(
-  currentSlug: string
+  currentSlug: string,
 ): Promise<PostNavigationType> {
   const posts = await getAllPosts();
-  const currentIndex = posts.findIndex((post) => post.slug === currentSlug);
+  const currentIndex = posts.findIndex((p) => p.slug === currentSlug);
 
   return {
     prev: currentIndex > 0 ? posts[currentIndex - 1] : undefined,
-    next: currentIndex < posts.length - 1 ? posts[currentIndex + 1] : undefined,
+    next:
+      currentIndex < posts.length - 1 ? posts[currentIndex + 1] : undefined,
   };
 }

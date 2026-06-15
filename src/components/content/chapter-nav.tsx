@@ -1,7 +1,7 @@
 /**
  * 章节导航组件
- * 显示同一分类（章节）下的所有文章
- * 在桌面端固定在左侧边栏
+ * 显示同一章节下的所有文章
+ * 仅在文章详情页左侧边栏显示
  */
 
 import Link from "next/link";
@@ -12,33 +12,20 @@ interface ChapterPost {
 }
 
 interface ChapterNavProps {
-  /** 分类名称（如 "4-全栈/01-elysia"） */
-  categoryName: string;
+  /** 章节名称（如 "elysia"） */
+  chapterName: string;
   /** 当前文章的 slug */
   currentSlug: string;
-  /** 同一分类下的所有文章 */
+  /** 同一章节下的所有文章 */
   posts: ChapterPost[];
 }
 
-const NUM_PREFIX_REGEX = /^\d+-/;
-
-/**
- * 将分类路径转为可读的章节名称
- * "4-全栈/01-elysia" → "全栈 / elysia"
- */
-function formatCategoryName(category: string): string {
-  return category
-    .split("/")
-    .map((part) => part.replace(NUM_PREFIX_REGEX, ""))
-    .join(" / ");
-}
-
 export function ChapterNav({
-  categoryName,
+  chapterName,
   currentSlug,
   posts,
 }: ChapterNavProps) {
-  if (posts.length === 0) {
+  if (posts.length <= 1) {
     return null;
   }
 
@@ -48,7 +35,7 @@ export function ChapterNav({
         章节
       </h3>
       <h4 className="mb-3 font-semibold text-gray-900 text-sm dark:text-white">
-        {formatCategoryName(categoryName)}
+        {chapterName}
       </h4>
       <ul className="space-y-1 border-gray-200 border-l-2 dark:border-gray-700">
         {posts.map((post) => {

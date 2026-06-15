@@ -5,9 +5,9 @@
 export interface BlogPost {
   /** 作者 */
   author?: string;
-  /** 分类 */
+  /** 分类（来自 frontmatter） */
   category: string;
-  /** Markdown 原始内容（文章详情页使用） */
+  /** Markdown 原始内容 */
   content?: string;
   /** 发布日期 */
   date: string;
@@ -23,6 +23,8 @@ export interface BlogPost {
   tags: string[];
   /** 文章标题 */
   title: string;
+  /** vault 中的目录路径 */
+  vaultDir?: string;
 }
 
 export interface PostNavItem {

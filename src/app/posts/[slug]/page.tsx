@@ -1,6 +1,9 @@
 /**
  * 博客文章详情页
- * 三列布局：左章节导航 | 中内容 | 右目录
+ *
+ * 布局规则：
+ * - blog 目录下的文章（散装）：右侧目录
+ * - article 目录下的文章（分章节）：左侧章节导航 + 右侧目录
  */
 
 import Link from "next/link";
@@ -15,6 +18,7 @@ import { PostNavigation } from "@/components/blog/post-navigation";
 import { Code } from "@/components/content/code";
 import { TableOfContents } from "@/components/content/table-of-contents";
 import { ChapterNav } from "@/components/content/chapter-nav";
+import { config } from "@/configs/config";
 import { getAllPosts } from "@/lib/posts";
 import { generateTOC } from "@/lib/toc";
 import "highlight.js/styles/github-dark.css";
@@ -34,7 +38,7 @@ export async function generateMetadata({
   const { slug } = await params;
   const allPosts = await getAllPosts();
   const post = allPosts.find(
-    (p) => p.slug === slug || p.slug === decodeURIComponent(slug)
+    (p) => p.slug === slug || p.slug === decodeURIComponent(slug),
   );
 
   if (!post) {
@@ -47,6 +51,24 @@ export async function generateMetadata({
   };
 }
 
+/** 判断是否为 article 类型（有章节结构的） */
+function isArticle(vaultDir?: string): boolean {
+  if (!vaultDir) return false;
+  return config.content.dirs.article.some((dir) => vaultDir.startsWith(dir));
+}
+
+/** 从 vaultDir 提取章节名称 */
+function getChapterName(vaultDir?: string): string {
+  if (!vaultDir) return "";
+  const parts = vaultDir.split("/");
+  // 对于 "1-全栈/elysia"，取 "elysia"
+  // 对于 "1-全栈/elysia/sub"，取 "elysia/sub"
+  if (parts.length >= 2) {
+    return parts.slice(1).join("/");
+  }
+  return vaultDir;
+}
+
 export default async function PostPage({
   params,
 }: {
@@ -55,15 +77,17 @@ export default async function PostPage({
   const { slug } = await params;
   const decodedSlug = decodeURIComponent(slug);
 
-  // 一次性获取所有文章，避免重复请求
+  // 一次性获取所有文章
   const allPosts = await getAllPosts();
-  const post = allPosts.find((p) => p.slug === slug || p.slug === decodedSlug);
+  const post = allPosts.find(
+    (p) => p.slug === slug || p.slug === decodedSlug,
+  );
 
   if (!post) {
     notFound();
   }
 
-  // 如果内容为空，说明获取失败了
+  // 内容加载失败的处理
   if (!post.content || post.content === "") {
     return (
       <div className="mx-auto max-w-4xl px-4 py-12 text-center sm:px-6 lg:px-8">
@@ -86,14 +110,13 @@ export default async function PostPage({
     );
   }
 
-  // 获取同分类文章（用于章节导航）
-  const categoryPosts = allPosts
-    .filter((p) => p.category === post.category)
-    .map((p) => ({ slug: p.slug, title: p.title }));
+  // 判断文章类型
+  const articleType = isArticle(post.vaultDir);
+  const chapterName = getChapterName(post.vaultDir);
 
   // 文章导航（上一篇/下一篇）
   const currentIndex = allPosts.findIndex(
-    (p) => p.slug === slug || p.slug === decodedSlug
+    (p) => p.slug === slug || p.slug === decodedSlug,
   );
   const navigation = {
     prev: currentIndex > 0 ? allPosts[currentIndex - 1] : undefined,
@@ -103,8 +126,21 @@ export default async function PostPage({
         : undefined,
   };
 
+  // 章节文章（左侧导航用）
+  const chapterPosts = articleType
+    ? allPosts
+        .filter((p) => p.vaultDir === post.vaultDir)
+        .map((p) => ({ slug: p.slug, title: p.title }))
+    : [];
+
   // 生成目录
   const toc = generateTOC(post.content);
+
+  // ─── 布局 ─────────────────────────────────────────────
+  // Blog:  [内容 col-10] [目录 col-2]
+  // Article:[章节 col-2] [内容 col-8] [目录 col-2]
+
+  const contentCols = articleType ? "lg:col-span-8" : "lg:col-span-10";
 
   return (
     <div className="w-full px-4 py-8 sm:px-6 lg:px-8">
@@ -131,26 +167,20 @@ export default async function PostPage({
           返回首页
         </Link>
 
-        {/* 三列布局：章节导航 | 内容 | 目录 */}
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
-          {/* 左侧章节导航 */}
-          {categoryPosts.length > 1 && (
+          {/* 左侧：章节导航（仅 article 类型） */}
+          {articleType && chapterPosts.length > 1 && (
             <aside className="hidden lg:col-span-2 lg:block">
               <ChapterNav
-                categoryName={post.category}
+                chapterName={chapterName}
                 currentSlug={post.slug}
-                posts={categoryPosts}
+                posts={chapterPosts}
               />
             </aside>
           )}
 
-          {/* 中间文章内容 */}
-          <article
-            className={
-              categoryPosts.length > 1 ? "lg:col-span-8" : "lg:col-span-10"
-            }
-          >
-            {/* 文章标题 */}
+          {/* 中间：文章内容 */}
+          <article className={contentCols}>
             <header className="mb-8">
               <h1 className="mb-4 font-bold text-4xl text-gray-900 dark:text-white">
                 {post.title}
@@ -158,7 +188,6 @@ export default async function PostPage({
               <PostMeta post={post} />
             </header>
 
-            {/* 文章内容 */}
             <div className="markdown-body w-full">
               <ReactMarkdown
                 components={{
@@ -191,7 +220,7 @@ export default async function PostPage({
             <PostNavigation navigation={navigation} />
           </article>
 
-          {/* 右侧目录导航 */}
+          {/* 右侧：目录导航 */}
           {toc.length > 0 && (
             <aside className="hidden lg:col-span-2 lg:block">
               <TableOfContents title="目录" toc={toc} />

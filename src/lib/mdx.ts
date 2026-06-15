@@ -1,9 +1,7 @@
 /**
  * MDX 处理工具
- * 解析 Markdown 内容，提取 frontmatter，生成摘要
- *
- * 使用 gray-matter 替代手写 frontmatter 解析
- * 使用 reading-time 替代手算阅读时间
+ * 使用 gray-matter 解析 frontmatter
+ * 使用 reading-time 计算阅读时间
  */
 
 import matter from "gray-matter";
@@ -21,7 +19,7 @@ export function extractFrontmatter(content: string): BlogFrontmatter {
   return {
     title: data.title,
     date: data.date,
-    category: data.category,
+    category: data.category, // 优先从 frontmatter 读取
     tags: Array.isArray(data.tags) ? data.tags : [],
     author: data.author,
     draft: data.draft === true,
@@ -38,13 +36,12 @@ export function removeFrontmatter(content: string): string {
 }
 
 /**
- * 生成文章摘要（从内容中提取前 N 个字符）
+ * 生成文章摘要
  */
 export function generateExcerpt(content: string, maxLength = 200): string {
   const { content: body } = matter(content);
 
   const cleanContent = body
-    // 移除 Markdown 语法
     .replace(/#{1,6}\s+/g, "")
     .replace(/\*\*/g, "")
     .replace(/\*/g, "")
@@ -61,7 +58,7 @@ export function generateExcerpt(content: string, maxLength = 200): string {
 }
 
 /**
- * 计算阅读时间（使用 reading-time）
+ * 计算阅读时间
  */
 export function calculateReadingTime(content: string): number {
   const { content: body } = matter(content);
@@ -71,7 +68,6 @@ export function calculateReadingTime(content: string): number {
 
 /**
  * 从文件名和分类生成唯一的 slug
- * 使用分类前缀确保不同目录下同名文件不会冲突
  */
 export function generateSlug(filename: string, category: string): string {
   const baseName = filename
@@ -90,14 +86,24 @@ export function generateSlug(filename: string, category: string): string {
 
 /**
  * 解析博客文章
+ *
+ * @param filename - 文件名
+ * @param vaultDir - vault 中的目录路径（如 "0-blog" 或 "1-全栈/elysia"）
+ * @param content - 文件内容
+ * @returns 文章数据（不含 slug）
  */
 export function parseBlogPost(
   filename: string,
-  category: string,
-  content: string
+  vaultDir: string,
+  content: string,
 ): Omit<BlogPost, "slug"> {
   const frontmatter = extractFrontmatter(content);
   const cleanContent = removeFrontmatter(content);
+
+  // 优先使用 frontmatter 中的 category
+  // 如果 frontmatter 未指定，从 vault 目录推导
+  // 都没有则默认 "其他"
+  const category = frontmatter.category || vaultDir || "其他";
 
   return {
     title: frontmatter.title || filename.replace(mdReg, ""),

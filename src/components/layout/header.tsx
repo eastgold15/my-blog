@@ -63,6 +63,34 @@ function NavItem({ item }: { item: NavItemType }) {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
 
+  // 外部链接（新窗口打开）
+  if (item.isExternal) {
+    return (
+      <a
+        className="flex items-center font-medium text-gray-700 text-sm transition-colors hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400"
+        href={item.slug}
+        rel="noopener noreferrer"
+        target="_blank"
+      >
+        {item.label}
+        <svg
+          aria-hidden="true"
+          className="ml-1 h-3 w-3"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+          />
+        </svg>
+      </a>
+    );
+  }
+
   // 如果没有子菜单，直接渲染链接
   if (!item.children || item.children.length === 0) {
     const isActive =
