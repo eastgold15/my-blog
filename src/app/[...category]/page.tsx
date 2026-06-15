@@ -31,6 +31,7 @@ import {
 } from "@/lib/vault-cache";
 import type { BlogPost } from "@/types/blog";
 import "highlight.js/styles/github-dark.css";
+import type { Metadata } from "next";
 
 const NUM_PREFIX_REGEX = /^\d+-/;
 const CACHE_ROOT = join(process.cwd(), ".vault-cache");
@@ -115,7 +116,7 @@ export async function generateMetadata({
   params,
 }: {
   params: Promise<{ category: string[] }>;
-}) {
+}): Promise<Metadata> {
   const { category } = await params;
   const name = decodeURIComponent(category.join("/")).replace(
     NUM_PREFIX_REGEX,
@@ -163,8 +164,8 @@ async function BookView({
   } catch {
     // 文件 frontmatter 格式错误时静默降级
   }
-  const title =
-    fm.title ||
+  const title: string =
+    (fm.title as string) ||
     filePath
       .split("/")
       .pop()
