@@ -30,7 +30,7 @@ export function ChapterNav({
   }
 
   return (
-    <nav className="sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto">
+    <nav className="hide-scrollbar sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto">
       <h3 className="mb-3 font-medium text-gray-500 text-xs uppercase tracking-wider dark:text-gray-400">
         章节
       </h3>

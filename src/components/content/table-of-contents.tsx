@@ -73,7 +73,7 @@ export function TableOfContents({ toc, title }: TableOfContentsProps) {
   }
 
   return (
-    <nav className="sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto">
+    <nav className="hide-scrollbar sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto">
       {title && (
         <h3 className="mb-3 font-semibold text-gray-900 dark:text-white">
           {title}

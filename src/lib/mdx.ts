@@ -22,13 +22,13 @@ export function extractFrontmatter(content: string): BlogFrontmatter {
   }
 
   return {
-    title: data.title,
-    date: data.date,
-    category: data.category, // 优先从 frontmatter 读取
-    tags: Array.isArray(data.tags) ? data.tags : [],
-    author: data.author,
+    title: data.title as string | undefined,
+    date: data.date as string | undefined,
+    category: data.category as string | undefined,
+    tags: Array.isArray(data.tags) ? (data.tags as string[]) : [],
+    author: data.author as string | undefined,
     draft: data.draft === true,
-    description: data.description,
+    description: data.description as string | undefined,
   };
 }
 

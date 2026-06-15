@@ -126,6 +126,15 @@ body {
   @apply bg-transparent p-0;
 }
 
+/* 隐藏滚动条（保留滚动功能） */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 /* 行限制类 */
 .line-clamp-1 {
   display: -webkit-box;

@@ -157,14 +157,9 @@ async function BookView({
   // 读文件 + 渲染
   const rawContent = readVaultFile(filePath);
   const content = processObsidianSyntax(rawContent);
-  let fm: Record<string, unknown> = {};
-  try {
-    fm = matter(content).data;
-  } catch {
-    // 忽略 frontmatter 解析错误
-  }
+  const { data: fm } = matter(content);
   const title =
-    (fm.title as string) ||
+    fm.title ||
     filePath
       .split("/")
       .pop()

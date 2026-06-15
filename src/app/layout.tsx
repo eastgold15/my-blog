@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Footer } from "@/components/layout/footer";
 import { HeaderWrapper } from "@/components/layout/header-wrapper";
+import { config } from "@/configs/config";
 
 export const metadata: Metadata = {
-  title: "我的博客",
-  description: "分享技术知识和生活感悟",
+  title: config.blog.title,
+  description: config.blog.description,
 };
 
 export default function RootLayout({

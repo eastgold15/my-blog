@@ -8,6 +8,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { config } from "@/configs/config";
 import type { NavItem as NavItemType } from "@/types/navigation";
 
 interface HeaderProps {
@@ -21,7 +22,7 @@ export function Header({ navItems }: HeaderProps) {
         <div className="flex h-16 items-center justify-between">
           <Link className="flex items-center space-x-2" href="/">
             <span className="font-bold text-gray-900 text-xl dark:text-white">
-              我的博客
+              {config.blog.title}
             </span>
           </Link>
 
