@@ -34,6 +34,9 @@ yarn-error.log*
 .env*
 !.env.example
 
+# vault local cache
+.vault-cache
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
