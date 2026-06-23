@@ -11,8 +11,10 @@
 import { execSync } from "node:child_process";
 import {
   existsSync,
+  mkdirSync,
   readdirSync,
   readFileSync,
+  renameSync,
   rmSync,
   statSync,
 } from "node:fs";
@@ -48,6 +50,36 @@ export function syncVault(): void {
   const repoUrl = getCloneUrl();
   const branch = config.vault.branch;
   const dotGit = join(cachePath, ".git");
+  const lockPath = `${cachePath}.lock`;
+  const tempCachePath = `${cachePath}.tmp`;
+
+  function acquireLock(): boolean {
+    try {
+      mkdirSync(lockPath);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  function releaseLock(): void {
+    try {
+      rmSync(lockPath, { recursive: true, force: true });
+    } catch {
+      // ignore
+    }
+  }
+
+  function waitForClone(): void {
+    for (let i = 0; i < 30; i++) {
+      if (isRepoReady(cachePath)) {
+        console.log("[vault-cache] ✅ 其他 worker 已同步完成");
+        return;
+      }
+      execSync("sleep 1", { stdio: "ignore" });
+    }
+    throw new Error("等待 git clone 超时");
+  }
 
   // .git 存在且 HEAD 可读 → 已克隆完成
   if (existsSync(dotGit) && isRepoReady(cachePath)) {
@@ -70,27 +102,43 @@ export function syncVault(): void {
 
   // .git 存在但 HEAD 不可读 → 其他 worker 正在 clone，等待
   if (existsSync(dotGit)) {
-    for (let i = 0; i < 30; i++) {
-      if (isRepoReady(cachePath)) {
-        console.log("[vault-cache] ✅ 其他 worker 已同步完成");
-        return;
-      }
-      execSync("sleep 1", { stdio: "ignore" });
+    waitForClone();
+    return;
+  }
+
+  // 处理并发首次 clone
+  if (!acquireLock()) {
+    waitForClone();
+    return;
+  }
+
+  try {
+    console.log(`[vault-cache] 首次同步: git clone ${config.vault.repo}`);
+
+    if (existsSync(tempCachePath)) {
+      rmSync(tempCachePath, { recursive: true, force: true });
     }
-    throw new Error("等待 git clone 超时");
-  }
 
-  // 首次 clone
-  console.log(`[vault-cache] 首次同步: git clone ${config.vault.repo}`);
-  if (existsSync(cachePath)) {
-    rmSync(cachePath, { recursive: true });
-  }
+    if (existsSync(cachePath)) {
+      rmSync(cachePath, { recursive: true, force: true });
+    }
 
-  execSync(
-    `git clone --depth 1 --branch ${branch} "${repoUrl}" "${cachePath}"`,
-    { stdio: "inherit", timeout: 90_000 }
-  );
-  console.log("[vault-cache] ✅ 同步完成");
+    execSync(
+      `git clone --depth 1 --branch ${branch} "${repoUrl}" "${tempCachePath}"`,
+      { stdio: "inherit", timeout: 90_000 }
+    );
+
+    if (existsSync(cachePath)) {
+      rmSync(cachePath, { recursive: true, force: true });
+    }
+    renameSync(tempCachePath, cachePath);
+    console.log("[vault-cache] ✅ 同步完成");
+  } finally {
+    releaseLock();
+    if (existsSync(tempCachePath)) {
+      rmSync(tempCachePath, { recursive: true, force: true });
+    }
+  }
 }
 
 // ─── 文件读取 ────────────────────────────────────────
