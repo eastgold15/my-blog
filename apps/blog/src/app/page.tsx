@@ -106,10 +106,7 @@ export default async function HomePage(props: { searchParams: SearchParams }) {
             );
           })}
           {Object.keys(activeFilters).length > 0 && (
-            <Link
-              className="text-blue-500 text-sm hover:underline"
-              href="/"
-            >
+            <Link className="text-blue-500 text-sm hover:underline" href="/">
               清除全部筛选
             </Link>
           )}

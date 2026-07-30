@@ -85,7 +85,7 @@ export function generateSlug(filename: string, _category?: string): string {
     .replace(mdReg, "") // 去 .md / .mdx
     .toLowerCase()
     .replace(/\s+/g, "-") // 空格 → -
-    .replace(/[^a-z0-9一-龥.\-]/g, "-") // 非法字符 → -
+    .replace(/[^a-z0-9一-龥.-]/g, "-") // 非法字符 → -
     .replace(/-+/g, "-") // 连续 - 合并
     .replace(/^-+|-+$/g, ""); // 去首尾 -
 }

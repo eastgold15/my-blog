@@ -1,9 +1,11 @@
 /**
- * 博客文章详情页
+ * 博客文章详情页(掘金式三栏布局)
  *
- * 布局规则：
- * - blog 目录下的文章（散装）：右侧目录
- * - article 目录下的文章（分章节）：左侧章节导航 + 右侧目录
+ * ┌─ 左 240px ─┬─ 中 flex-1(居中)─┬─ 右 240px ─┐
+ * │  章节目录  │                  │  本文目录  │
+ * │  (可收起)  │   文章正文       │  (可收起)  │
+ * └────────────┴──────────────────┴────────────┘
+ * 左右栏由 CollapsibleSidebar 渲染,默认收起成 48px 宽竖条(只露圆形按钮)
  */
 
 import Link from "next/link";
@@ -17,9 +19,11 @@ import { PostMeta } from "@/components/blog/post-meta";
 import { PostNavigation } from "@/components/blog/post-navigation";
 import { ChapterNav } from "@/components/content/chapter-nav";
 import { Code } from "@/components/content/code";
+import { CollapsibleSidebar } from "@/components/content/collapsible-sidebar";
 import { TableOfContents } from "@/components/content/table-of-contents";
 import { getAllPosts } from "@/lib/posts";
 import { generateTOC } from "@/lib/toc";
+import type { BlogPost } from "@/types/blog";
 import "highlight.js/styles/github-dark.css";
 
 // 生成静态参数
@@ -50,8 +54,7 @@ export async function generateMetadata({
   };
 }
 
-/** 判断是否为 article 类型（有章节结构的） */
-/** 是否为系列文章:只看 frontmatter series 字段(系列是"渲染模式标记",不是路径判定) */
+/** 系列文章判定:只看 frontmatter series 字段(系列是"渲染模式标记") */
 function isArticle(
   _vaultDir?: string,
   data?: Record<string, unknown>
@@ -59,7 +62,7 @@ function isArticle(
   return Boolean(data?.series);
 }
 
-/** 章节名(从 frontmatter series) */
+/** 系列名(从 frontmatter series) */
 function getChapterName(
   _vaultDir?: string,
   data?: Record<string, unknown>
@@ -67,7 +70,7 @@ function getChapterName(
   return data?.series ? String(data.series) : "";
 }
 
-/** 同目录下的所有笔记(系列文章左侧目录)——getAllPosts 已只返回 published:true */
+/** 同 vault 目录下的所有笔记(getAllPosts 已只返回 published:true) */
 function getChapterSiblings(
   currentPost: BlogPost,
   allPosts: BlogPost[]
@@ -117,7 +120,7 @@ export default async function PostPage({
     );
   }
 
-  // 判断文章类型(用 series 优先,vaultDir 兜底)
+  // 文章类型 & 系列名
   const articleType = isArticle(
     post.vaultDir,
     post as unknown as Record<string, unknown>
@@ -127,19 +130,19 @@ export default async function PostPage({
     post as unknown as Record<string, unknown>
   );
 
-  // 文章导航（上一篇/下一篇）
-  const currentIndex = allPosts.findIndex(
-    (p) => p.slug === slug || p.slug === decodedSlug
-  );
+  // 文章导航(上一篇/下一篇)
   const navigation = {
     next:
-      currentIndex < allPosts.length - 1
-        ? allPosts[currentIndex + 1]
+      currentIndex(allPosts, post) < allPosts.length - 1
+        ? allPosts[currentIndex(allPosts, post) + 1]
         : undefined,
-    prev: currentIndex > 0 ? allPosts[currentIndex - 1] : undefined,
+    prev:
+      currentIndex(allPosts, post) > 0
+        ? allPosts[currentIndex(allPosts, post) - 1]
+        : undefined,
   };
 
-  // 章节文章（左侧导航用）
+  // 同系列文章(左侧导航用)
   const chapterPosts = articleType
     ? getChapterSiblings(post, allPosts).map((p) => ({
         slug: p.slug,
@@ -147,54 +150,55 @@ export default async function PostPage({
       }))
     : [];
 
-  // 生成目录
+  // 文章目录
   const toc = generateTOC(post.content);
-
-  // ─── 布局 ─────────────────────────────────────────────
-  // Blog:  [内容 col-10] [目录 col-2]
-  // Article:[章节 col-2] [内容 col-8] [目录 col-2]
-
-  const contentCols = articleType ? "lg:col-span-8" : "lg:col-span-10";
 
   return (
     <div className="w-full px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mx-auto w-full max-w-450">
-        {/* 返回首页链接 */}
-        <Link
-          className="mb-6 inline-flex items-center text-gray-600 text-sm transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-          href="/"
+      {/* 返回首页链接 */}
+      <Link
+        className="mb-6 inline-flex items-center text-gray-600 text-sm transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+        href="/"
+      >
+        <svg
+          aria-hidden="true"
+          className="mr-1 h-4 w-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
         >
-          <svg
-            aria-hidden="true"
-            className="mr-1 h-4 w-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+          <path
+            d="M10 19l-7-7m0 0l7-7m-7 7h18"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+          />
+        </svg>
+        返回首页
+      </Link>
+
+      {/* 三栏布局:左 / 中 / 右 */}
+      <div className="flex items-start gap-4">
+        {/* 左:章节目录(仅系列文章 + 同目录多于 1 篇才显示) */}
+        {articleType && chapterPosts.length > 1 && (
+          <CollapsibleSidebar
+            collapsedIcon={<span className="text-base">📑</span>}
+            icon={<span>📑</span>}
+            side="left"
+            storageKey="chapter"
+            title={chapterName || "章节目录"}
           >
-            <path
-              d="M10 19l-7-7m0 0l7-7m-7 7h18"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
+            <ChapterNav
+              chapterName={chapterName}
+              currentSlug={post.slug}
+              posts={chapterPosts}
             />
-          </svg>
-          返回首页
-        </Link>
+          </CollapsibleSidebar>
+        )}
 
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
-          {/* 左侧：章节导航（仅 article 类型） */}
-          {articleType && chapterPosts.length > 1 && (
-            <aside className="hidden lg:col-span-2 lg:block">
-              <ChapterNav
-                chapterName={chapterName}
-                currentSlug={post.slug}
-                posts={chapterPosts}
-              />
-            </aside>
-          )}
-
-          {/* 中间：文章内容 */}
-          <article className={contentCols}>
+        {/* 中:文章主内容(居中) */}
+        <main className="min-w-0 flex-1">
+          <article className="mx-auto w-full max-w-3xl">
             <header className="mb-8">
               <h1 className="mb-4 font-bold text-4xl text-gray-900 dark:text-white">
                 {post.title}
@@ -233,15 +237,26 @@ export default async function PostPage({
             {/* 文章导航 */}
             <PostNavigation navigation={navigation} />
           </article>
+        </main>
 
-          {/* 右侧：目录导航 */}
-          {toc.length > 0 && (
-            <aside className="hidden lg:col-span-2 lg:block">
-              <TableOfContents title="目录" toc={toc} />
-            </aside>
-          )}
-        </div>
+        {/* 右:本文目录(有 toc 才显示) */}
+        {toc.length > 0 && (
+          <CollapsibleSidebar
+            collapsedIcon={<span className="text-base">📋</span>}
+            icon={<span>📋</span>}
+            side="right"
+            storageKey="toc"
+            title="本文目录"
+          >
+            <TableOfContents title="目录" toc={toc} />
+          </CollapsibleSidebar>
+        )}
       </div>
     </div>
   );
+}
+
+/** 找当前文章在已排序列表中的索引 */
+function currentIndex(allPosts: BlogPost[], post: BlogPost): number {
+  return allPosts.findIndex((p) => p.slug === post.slug);
 }
