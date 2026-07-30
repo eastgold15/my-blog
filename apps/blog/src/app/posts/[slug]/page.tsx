@@ -52,28 +52,31 @@ export async function generateMetadata({
 }
 
 /** 判断是否为 article 类型（有章节结构的） */
-/** 是否带章节:frontmatter series 优先,否则看 vaultDir 是否在子目录 */
+/** 是否为系列文章:只看 frontmatter series 字段(系列是"渲染模式标记",不是路径判定) */
 function isArticle(
-  vaultDir?: string,
+  _vaultDir?: string,
   data?: Record<string, unknown>
 ): boolean {
-  if (data?.series) return true;
-  if (vaultDir && vaultDir.split("/").length >= 1) return true;
-  return false;
+  return Boolean(data?.series);
 }
 
-/** 从 frontmatter series 或 vaultDir 提取章节名 */
+/** 章节名(从 frontmatter series) */
 function getChapterName(
-  vaultDir?: string,
+  _vaultDir?: string,
   data?: Record<string, unknown>
 ): string {
-  if (data?.series) return String(data.series);
-  if (!vaultDir) return "";
-  const parts = vaultDir.split("/");
-  if (parts.length >= 1) {
-    return parts[parts.length - 1].replace(/^[0-9]+[-.]/, "");
-  }
-  return vaultDir;
+  return data?.series ? String(data.series) : "";
+}
+
+/** 同目录下的所有笔记(系列文章左侧目录)——getAllPosts 已只返回 published:true */
+function getChapterSiblings(
+  currentPost: BlogPost,
+  allPosts: BlogPost[]
+): BlogPost[] {
+  if (!currentPost.vaultDir) return [currentPost];
+  return allPosts
+    .filter((p) => p.vaultDir === currentPost.vaultDir)
+    .sort((a, b) => a.slug.localeCompare(b.slug, "zh-CN"));
 }
 
 export default async function PostPage({
@@ -133,9 +136,10 @@ export default async function PostPage({
 
   // 章节文章（左侧导航用）
   const chapterPosts = articleType
-    ? allPosts
-        .filter((p) => p.vaultDir === post.vaultDir)
-        .map((p) => ({ slug: p.slug, title: p.title }))
+    ? getChapterSiblings(post, allPosts).map((p) => ({
+        slug: p.slug,
+        title: p.title,
+      }))
     : [];
 
   // 生成目录

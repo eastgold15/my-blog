@@ -15,6 +15,8 @@ export interface BlogPost {
   draft?: boolean;
   /** 文章摘要 */
   excerpt: string;
+  /** 是否发布(true=进网站) */
+  published?: boolean;
   /** 预计阅读时间（分钟） */
   readingTime?: number;
   /** 唯一标识 */

@@ -110,6 +110,11 @@ export function parseBlogPost(
   // 都没有则默认 "其他"
   const category = frontmatter.category || vaultDir || "其他";
 
+  // 从 raw data 取 published 和 series(extractFrontmatter 没暴露)
+  const { data: rawData } = matter(content);
+  const published = rawData?.published === true;
+  const series = rawData?.series as string | undefined;
+
   return {
     author: frontmatter.author,
     category,
@@ -117,8 +122,9 @@ export function parseBlogPost(
     date: frontmatter.date || new Date().toISOString(),
     draft: frontmatter.draft,
     excerpt: frontmatter.description || generateExcerpt(content),
+    published,
     readingTime: calculateReadingTime(content),
-    series: frontmatter.series,
+    series,
     tags: frontmatter.tags || [],
     title: frontmatter.title || filename.replace(mdReg, ""),
   };
