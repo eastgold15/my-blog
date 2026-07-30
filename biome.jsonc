@@ -12,13 +12,26 @@
         "noExcessiveCognitiveComplexity": "off"
       },
       "performance": {
-        "useTopLevelRegex": "off"
+        "useTopLevelRegex": "off",
+        "noJsxPropsBind": "off",
+        "noBarrelFile": "off"
       },
       "style": {
-        "useBlockStatements": "off"
+        "useBlockStatements": "off",
+        "useConsistentTypeDefinitions": "off",
+        "useDestructuring": "off",
+        "useAtIndex": "off",
+        "noIncrementDecrement": "off",
+        "useDefaultSwitchClause": "off",
+        "noParameterProperties": "off",
+        "useErrorCause": "off"
       },
       "a11y": {
         "noSvgWithoutTitle": "off"
+      },
+      "suspicious": {
+        "noLeakedRender": "off",
+        "noUnnecessaryConditions": "off"
       }
     }
   },
