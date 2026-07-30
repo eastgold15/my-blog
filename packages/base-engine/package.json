@@ -33,5 +33,10 @@
   },
   "dependencies": {
     "@aliou/obsdx-base-ast": "workspace:*"
+  },
+  "devDependencies": {
+    "tsdown": "latest",
+    "typescript": "^5.0.0",
+    "vitest": "latest"
   }
 }

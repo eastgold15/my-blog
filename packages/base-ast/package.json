@@ -33,5 +33,10 @@
   },
   "dependencies": {
     "yaml": "^2.7.0"
+  },
+  "devDependencies": {
+    "tsdown": "latest",
+    "typescript": "^5.0.0",
+    "vitest": "latest"
   }
 }
