@@ -53,12 +53,12 @@ function getBasePath(): string {
 }
 
 /** 读 base 文件 schema */
-export function getSchema(): ParsedBase {
+export async function getSchema(): Promise<ParsedBase> {
   if (!schemaCache) {
     const basePath = getBasePath();
     if (!existsSync(basePath)) {
       // 触发 vault 同步(首次 / build 阶段)
-      syncVault();
+      await syncVault();
     }
     schemaCache = parsePublishedBase(getBasePath());
   }
@@ -105,8 +105,8 @@ export function getAllPublishedPosts(): VaultPost[] {
 }
 
 /** 拿到 schema + 已填充 values 的维度(用于 chip 栏) */
-export function getDimensions(): Dimension[] {
-  const schema = getSchema();
+export async function getDimensions(): Promise<Dimension[]> {
+  const schema = await getSchema();
   const posts = getAllPublishedPosts();
   return collectDimensionValues(
     schema.dimensions,

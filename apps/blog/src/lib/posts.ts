@@ -14,7 +14,7 @@ let vaultCache: typeof import("./vault-cache");
 async function getVaultCache() {
   if (!vaultCache) {
     vaultCache = await import("./vault-cache");
-    vaultCache.syncVault();
+    await vaultCache.syncVault();
   }
   return vaultCache;
 }

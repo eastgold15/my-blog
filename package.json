@@ -1,6 +1,7 @@
 {
   "devDependencies": {
     "@biomejs/biome": "2.5.3",
+    "@types/adm-zip": "^0.5.8",
     "@types/bun": "latest",
     "highlight.js": "^11.11.1",
     "ultracite": "7.9.4"
@@ -19,5 +20,8 @@
   "scripts": {
     "check": "ultracite check",
     "fix": "ultracite fix"
+  },
+  "dependencies": {
+    "adm-zip": "^0.6.0"
   }
 }

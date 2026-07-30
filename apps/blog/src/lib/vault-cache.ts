@@ -1,14 +1,15 @@
 /**
  * Vault 本地缓存系统
  *
- * 功能：
- * 1. 首次运行 git clone --depth 1 同步 vault 到本地
- * 2. 后续构建只用 git pull（失败则使用旧缓存）
- * 3. 本地文件发现 + 按 config 规则筛选
- * 4. 构建期间 0 次 GitHub API 调用
+ * 改用 Octokit + codeload zip 拉取(替代 git clone):
+ * - 单次 HTTP,3-5 秒拉完整个 vault
+ * - 走 GitHub S3,不受 REST API rate limit 约束
+ * - 跨平台,不依赖 git 协议
+ * - 支持私有仓库(Authorization 头带 token)
  */
 
-import { execSync } from "node:child_process";
+import AdmZip from "adm-zip";
+import { Octokit } from "@octokit/rest";
 import {
   existsSync,
   mkdirSync,
@@ -17,128 +18,105 @@ import {
   renameSync,
   rmSync,
   statSync,
+  writeFileSync,
 } from "node:fs";
 import { join } from "node:path";
 import { config } from "@/configs/config";
 import type { NavItem } from "@/types/navigation";
 
 const CACHE_DIR = config.vault.cacheDir;
+const tempCachePath = `${CACHE_DIR}.tmp`;
+const lockPath = `${CACHE_DIR}.lock`;
 
-// ─── Git 同步 ────────────────────────────────────────
+// 并发锁:让多 worker 不会重复拉取
+let syncingPromise: Promise<void> | null = null;
 
-function getCloneUrl(): string {
-  const { owner, name, githubToken: token } = config.vault;
-  if (!token) return `https://github.com/${owner}/${name}.git`;
-  return `https://oauth2:${token}@github.com/${owner}/${name}.git`;
-}
-
-/** 检查 git 仓库是否就绪（HEAD 可访问） */
-function isRepoReady(cachePath: string): boolean {
-  try {
-    execSync(`git -C "${cachePath}" rev-parse HEAD --quiet`, {
-      stdio: "pipe",
-      timeout: 5000,
-    });
-    return true;
-  } catch {
-    return false;
+/** 核心:Octokit + codeload zip 同步到本地 */
+async function syncFromGithub(): Promise<void> {
+  const { owner, name: repo, githubToken: token, branch } = config.vault;
+  if (!token) {
+    throw new Error("BLOG_GITHUB_TOKEN 未设置,无法拉取 vault");
   }
-}
 
-export function syncVault(): void {
   const cachePath = join(process.cwd(), CACHE_DIR);
-  const repoUrl = getCloneUrl();
-  const branch = config.vault.branch;
-  const dotGit = join(cachePath, ".git");
-  const lockPath = `${cachePath}.lock`;
-  const tempCachePath = `${cachePath}.tmp`;
 
-  function acquireLock(): boolean {
-    try {
-      mkdirSync(lockPath);
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
-  function releaseLock(): void {
-    try {
-      rmSync(lockPath, { force: true, recursive: true });
-    } catch {
-      // ignore
-    }
-  }
-
-  function waitForClone(): void {
-    for (let i = 0; i < 30; i++) {
-      if (isRepoReady(cachePath)) {
-        console.log("[vault-cache] ✅ 其他 worker 已同步完成");
-        return;
-      }
-      execSync("sleep 1", { stdio: "ignore" });
-    }
-    throw new Error("等待 git clone 超时");
-  }
-
-  // .git 存在且 HEAD 可读 → 已克隆完成
-  if (existsSync(dotGit) && isRepoReady(cachePath)) {
-    try {
-      console.log("[vault-cache] 检查更新: git fetch + reset");
-      execSync(
-        `git -C "${cachePath}" fetch origin ${branch} --depth 1 --force`,
-        { stdio: "inherit", timeout: 30_000 }
-      );
-      execSync(`git -C "${cachePath}" reset --hard FETCH_HEAD`, {
-        stdio: "inherit",
-        timeout: 15_000,
-      });
-      console.log("[vault-cache] ✅ 已是最新");
-    } catch {
-      console.warn("[vault-cache] ⚠️ 拉取失败，使用本地缓存");
-    }
+  // 已有缓存 → 跳过
+  if (existsSync(join(cachePath, "views.published.base"))) {
+    console.log("[vault-cache] ✅ 缓存已存在,跳过拉取");
     return;
   }
 
-  // .git 存在但 HEAD 不可读 → 其他 worker 正在 clone，等待
-  if (existsSync(dotGit)) {
-    waitForClone();
-    return;
+  console.log(`[vault-cache] 开始拉取 ${owner}/${repo}@${branch} (codeload zip)`);
+
+  const octokit = new Octokit({ auth: token });
+  // 拿 default branch 的最新 commit SHA(显式 SHA 比传 branch name 更可靠,
+  // 避免 codeload 用过时的 cache)
+  const { data: repoMeta } = await octokit.rest.repos.get({ owner, repo });
+  const { data: refData } = await octokit.rest.git.getRef({
+    owner,
+    repo,
+    ref: `heads/${repoMeta.default_branch}`,
+  });
+  const sha = refData.object.sha;
+
+  const archive = await octokit.rest.repos.downloadZipballArchive({
+    owner,
+    repo,
+    ref: sha,
+  });
+  const url = (archive as { url: string }).url;
+
+  console.log(`[vault-cache] 下载 zip: ${url.slice(0, 80)}...`);
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    throw new Error(`zip 下载失败: HTTP ${res.status}`);
+  }
+  const buf = Buffer.from(await res.arrayBuffer());
+  console.log(`[vault-cache] 下载完成 (${(buf.length / 1024).toFixed(1)} KB),解压中...`);
+
+  const zip = new AdmZip(buf);
+  const entries = zip.getEntries();
+  const rootPrefix = entries[0]?.entryName.split("/")[0] ?? "";
+  if (!rootPrefix) {
+    throw new Error("zip 结构异常,找不到根目录");
   }
 
-  // 处理并发首次 clone
-  if (!acquireLock()) {
-    waitForClone();
-    return;
+  if (existsSync(tempCachePath)) {
+    rmSync(tempCachePath, { force: true, recursive: true });
+  }
+  mkdirSync(tempCachePath, { recursive: true });
+
+  for (const entry of entries) {
+    if (entry.isDirectory) continue;
+    const rel = entry.entryName.slice(rootPrefix.length + 1);
+    if (!rel) continue;
+    const out = join(tempCachePath, rel);
+    mkdirSync(join(out, ".."), { recursive: true });
+    writeFileSync(out, entry.getData());
   }
 
-  try {
-    console.log(`[vault-cache] 首次同步: git clone ${config.vault.repo}`);
-
-    if (existsSync(tempCachePath)) {
-      rmSync(tempCachePath, { force: true, recursive: true });
-    }
-
-    if (existsSync(cachePath)) {
-      rmSync(cachePath, { force: true, recursive: true });
-    }
-
-    execSync(
-      `git clone --depth 1 --branch ${branch} "${repoUrl}" "${tempCachePath}"`,
-      { stdio: "inherit", timeout: 90_000 }
-    );
-
-    if (existsSync(cachePath)) {
-      rmSync(cachePath, { force: true, recursive: true });
-    }
-    renameSync(tempCachePath, cachePath);
-    console.log("[vault-cache] ✅ 同步完成");
-  } finally {
-    releaseLock();
-    if (existsSync(tempCachePath)) {
-      rmSync(tempCachePath, { force: true, recursive: true });
-    }
+  if (existsSync(cachePath)) {
+    rmSync(cachePath, { force: true, recursive: true });
   }
+  renameSync(tempCachePath, cachePath);
+  console.log(`[vault-cache] ✅ 同步完成 (${entries.length} 条目)`);
+}
+
+/** 异步同步入口:并发安全(多 worker 共享同一个 promise) */
+export async function syncVault(): Promise<void> {
+  if (syncingPromise) {
+    return syncingPromise;
+  }
+  syncingPromise = (async () => {
+    try {
+      await syncFromGithub();
+    } finally {
+      syncingPromise = null;
+    }
+  })();
+  return syncingPromise;
 }
 
 // ─── 文件读取 ────────────────────────────────────────

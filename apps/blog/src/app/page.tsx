@@ -13,7 +13,7 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 export default async function HomePage(props: { searchParams: SearchParams }) {
   const searchParams = await props.searchParams;
   const allPosts = getAllPublishedPosts();
-  const dimensions = getDimensions();
+  const dimensions = await getDimensions();
 
   // 解析 URL 中的筛选条件(支持多值,用 `,` 分隔)
   const activeFilters: Record<string, string[]> = {};

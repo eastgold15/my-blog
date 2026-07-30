@@ -4,8 +4,12 @@
   "workspaces": {
     "": {
       "name": "my-blog",
+      "dependencies": {
+        "adm-zip": "^0.6.0",
+      },
       "devDependencies": {
         "@biomejs/biome": "2.5.3",
+        "@types/adm-zip": "^0.5.8",
         "@types/bun": "latest",
         "highlight.js": "^11.11.1",
         "ultracite": "7.9.4",
@@ -334,6 +338,8 @@
 
     "@tybys/wasm-util": ["@tybys/wasm-util@0.10.3", "https://mirrors.cloud.tencent.com/npm/@tybys/wasm-util/-/wasm-util-0.10.3.tgz", { "dependencies": { "tslib": "^2.4.0" } }, "sha512-F3fo1MYrRJYL3zER0OUOmkutjr1Vp23m7OsSgp7nq4SP6OqX6C/56XFIPAl5bt3zaBRjmW7SGz3u/6LwFpYcOg=="],
 
+    "@types/adm-zip": ["@types/adm-zip@0.5.8", "https://mirrors.cloud.tencent.com/npm/@types/adm-zip/-/adm-zip-0.5.8.tgz", { "dependencies": { "@types/node": "*" } }, "sha512-RVVH7QvZYbN+ihqZ4kX/dMiowf6o+Jk1fNwiSdx0NahBJLU787zkULhGhJM8mf/obmLGmgdMM0bXsQTmyfbR7Q=="],
+
     "@types/braces": ["@types/braces@3.0.5", "https://mirrors.cloud.tencent.com/npm/@types/braces/-/braces-3.0.5.tgz", {}, "sha512-SQFof9H+LXeWNz8wDe7oN5zu7ket0qwMu5vZubW4GCJ8Kkeh6nBWUz87+KTz/G3Kqsrp0j/W253XJb3KMEeg3w=="],
 
     "@types/bun": ["@types/bun@1.3.14", "https://mirrors.cloud.tencent.com/npm/@types/bun/-/bun-1.3.14.tgz", { "dependencies": { "bun-types": "1.3.14" } }, "sha512-h1hFqFVcvAvD9j9K7ZW7vd82aSA+rTdznZa+5bwvCwqSB1jmmfLcbIWhOLx1/+boy/xmjgCs/OMUL8hRJSmnPw=="],
@@ -449,6 +455,8 @@
     "acorn": ["acorn@8.18.0", "https://mirrors.cloud.tencent.com/npm/acorn/-/acorn-8.18.0.tgz", { "bin": { "acorn": "bin/acorn" } }, "sha512-lGq+9yr1/GuAWaVYIHRjvvySG5/4VfKIvC8EWxStPdcDh/Ka7FG3twP6v4d5BkravUilhIAsG4Qj83t02LWUPQ=="],
 
     "acorn-jsx": ["acorn-jsx@5.3.2", "https://mirrors.cloud.tencent.com/npm/acorn-jsx/-/acorn-jsx-5.3.2.tgz", { "peerDependencies": { "acorn": "^6.0.0 || ^7.0.0 || ^8.0.0" } }, "sha512-rq9s+JNhf0IChjtDXxllJ7g41oZk5SlXtp0LHwyA5cejwn7vKmKp4pPri6YEePv2PU65sAsegbXtIinmDFDXgQ=="],
+
+    "adm-zip": ["adm-zip@0.6.0", "https://mirrors.cloud.tencent.com/npm/adm-zip/-/adm-zip-0.6.0.tgz", {}, "sha512-XleryMhbuksdKtofnWZ9Sk+4CUTbms4Mb/EU32SZwToAyZ5RgVos/ki8n+yr0LWHOGKuakbXTuuYNHLQjhddgg=="],
 
     "ajv": ["ajv@6.15.0", "https://mirrors.cloud.tencent.com/npm/ajv/-/ajv-6.15.0.tgz", { "dependencies": { "fast-deep-equal": "^3.1.1", "fast-json-stable-stringify": "^2.0.0", "json-schema-traverse": "^0.4.1", "uri-js": "^4.2.2" } }, "sha512-fgFx7Hfoq60ytK2c7DhnF8jIvzYgOMxfugjLOSMHjLIPgenqa7S7oaagATUq99mV6IYvN2tRmC0wnTYX6iPbMw=="],
 
