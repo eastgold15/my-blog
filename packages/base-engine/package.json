@@ -1,0 +1,37 @@
+{
+  "name": "@aliou/obsdx-base-engine",
+  "version": "0.2.0",
+  "description": "Obsidian Base query execution for obsdx",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    }
+  },
+  "files": [
+    "dist/index.d.mts",
+    "dist/index.mjs",
+    "dist/index.mjs.map"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aliou/obsdx",
+    "directory": "packages/base-engine"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=25.7.0"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "check": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@aliou/obsdx-base-ast": "workspace:*"
+  }
+}

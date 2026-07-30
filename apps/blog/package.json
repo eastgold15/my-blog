@@ -1,0 +1,62 @@
+{
+  "dependencies": {
+    "@aliou/obsdx-base-ast": "workspace:*",
+    "@aliou/obsdx-base-engine": "workspace:*",
+    "@mdx-js/loader": "^3.1.1",
+    "@mdx-js/react": "^3.1.1",
+    "@next/mdx": "^16.2.10",
+    "@octokit/rest": "^22.0.1",
+    "@types/mdx": "^2.0.14",
+    "github-slugger": "^2.0.0",
+    "gray-matter": "^4.0.3",
+    "jexl": "2.3.0",
+    "micromatch": "^4.0.8",
+    "next": "16.2.10",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "react-markdown": "^10.1.0",
+    "reading-time": "^1.5.0",
+    "rehype-highlight": "^7.0.2",
+    "rehype-slug": "^6.0.0",
+    "remark-gfm": "^4.0.1",
+    "remark-obsidian": "^1.12.1"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.3",
+    "@tailwindcss/postcss": "^4.3.1",
+    "@types/micromatch": "^4.0.10",
+    "@types/node": "^25.9.3",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "babel-plugin-react-compiler": "1.0.0",
+    "lefthook": "^2.1.10",
+    "tailwindcss": "^4.3.2",
+    "typescript": "^6.0.3",
+    "ultracite": "7.9.3"
+  },
+  "name": "my-blog",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "bun x next dev",
+    "build": "next build",
+    "start": "npx serve@latest out",
+    "lint": "biome check",
+    "format": "biome format --write",
+    "typeCheck": "npx tsc --noEmit",
+    "check": "ultracite check",
+    "fix": "ultracite fix",
+    "prepare": "lefthook install"
+  },
+  "version": "0.1.0",
+  "private": true,
+  "ignoreScripts": [
+    "sharp",
+    "unrs-resolver"
+  ],
+  "trustedDependencies": [
+    "sharp",
+    "unrs-resolver"
+  ]
+}
