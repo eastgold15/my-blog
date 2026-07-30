@@ -1,21 +1,10 @@
 /**
  * 全局配置
- * 定义 vault 仓库、内容目录、Tab 栏等
+ * vault 仓库 + 排除规则 + 顶部外链
+ *
+ * 注意:目录扁平化后,不再用 dirs.article/blog 白名单区分文章类型。
+ * 全部 .md 走同一条路径,published: true 决定是否发布,frontmatter 决定章节。
  */
-
-export interface DirConfig {
-  /** 文章目录：子目录分章节，*.md 在子目录内（左章节导航 + 右目录） */
-  article: string[];
-  /** 博客目录：*.md 直接放在目录下（页面只有右侧目录） */
-  blog: string[];
-}
-
-export interface TabConfig {
-  /** 链接地址（支持外链） */
-  href: string;
-  /** 标签名 */
-  label: string;
-}
 
 export interface ExcludeConfig {
   /** 目录名排除 */
@@ -26,19 +15,24 @@ export interface ExcludeConfig {
   prefix: string[];
 }
 
+export interface TabConfig {
+  /** 链接地址(支持外链) */
+  href: string;
+  /** 标签名 */
+  label: string;
+}
+
 export interface ContentConfig {
-  /** 内容目录配置 */
-  dirs: DirConfig;
   /** 排除规则 */
   exclude: ExcludeConfig;
-  /** Tab 栏附加标签（外链等） */
+  /** Tab 栏外链(只剩 GitHub) */
   extraTabs: TabConfig[];
 }
 
 export interface VaultConfig {
   /** 分支 */
   branch: string;
-  /** 本地缓存目录（相对项目根目录） */
+  /** 本地缓存目录(相对项目根目录) */
   cacheDir: string;
   /** GitHub Token */
   githubToken: string;
@@ -67,10 +61,6 @@ export const config: BlogConfig = {
     title: "pori博客",
   },
   content: {
-    dirs: {
-      article: ["4-全栈", "2-技术文章", "1-自用软件"],
-      blog: ["0-blog"],
-    },
     exclude: {
       dirs: ["templates", "drafts", "assets", ".git", ".obsidian"],
       files: ["CLAUDE.md"],

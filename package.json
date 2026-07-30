@@ -2,6 +2,7 @@
   "devDependencies": {
     "@biomejs/biome": "2.5.3",
     "@types/bun": "latest",
+    "highlight.js": "^11.11.1",
     "ultracite": "7.9.4"
   },
   "name": "my-blog",

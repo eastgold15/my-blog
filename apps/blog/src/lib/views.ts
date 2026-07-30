@@ -1,11 +1,15 @@
 /**
  * vault 扫描 + 维度收集
  * 纯 base 驱动:网页可筛维度从 views.published.base 读
+ *
+ * 数据源:复用 vault-cache 提供的 .vault-cache 目录(由 syncVault() 拉取),
+ * 跟 posts.ts 的 getAllPosts() 走同一条路径,保证 dev/build 行为一致。
  */
 
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import matter from "gray-matter";
+import { getAllMarkdownFiles, readVaultFile, syncVault } from "./vault-cache";
 import {
   collectDimensionValues,
   parsePublishedBase,
@@ -13,41 +17,12 @@ import {
   type ParsedBase,
 } from "./base-parser";
 
-const VAULT_ROOT = process.env.VAULT_PATH || "H:/main/knowledge_base";
-const BASE_FILE = `${VAULT_ROOT}/views.published.base`;
-
-function walk(dir: string, out: string[] = []): string[] {
-  const skip = new Set([
-    ".obsidian",
-    ".git",
-    ".agents",
-    ".claude",
-    "node_modules",
-    "scripts",
-    "copilot",
-    "assets",
-    "public",
-  ]);
-  for (const name of readdirSync(dir)) {
-    if (skip.has(name)) continue;
-    const full = join(dir, name);
-    if (statSync(full).isDirectory()) walk(full, out);
-    else if (name.endsWith(".md")) out.push(full);
-  }
-  return out;
-}
-
 /** 单篇笔记对外的类型(兼容 BlogPost) */
 export type VaultPost = {
-  /** 唯一 slug(用 frontmatter 里的 title 或文件名) */
   slug: string;
-  /** 显示标题 */
   title: string;
-  /** vault 中的相对路径 */
   filePath: string;
-  /** 原始 frontmatter */
   data: Record<string, unknown>;
-  /** 兼容 PostCard 的字段 */
   category: string;
   date: string;
   excerpt: string;
@@ -59,10 +34,33 @@ export type VaultPost = {
 let postsCache: VaultPost[] | null = null;
 let schemaCache: ParsedBase | null = null;
 
+/** vault 根目录:优先 .vault-cache(云端统一),否则本地(开发直读) */
+function getVaultRoot(): string {
+  const cached = join(process.cwd(), ".vault-cache");
+  if (existsSync(join(cached, "views.published.base"))) {
+    return cached;
+  }
+  // 兜底:本地 vault(只在 .vault-cache 还没同步时用)
+  if (existsSync("H:/main/knowledge_base/views.published.base")) {
+    return "H:/main/knowledge_base";
+  }
+  return cached;
+}
+
+/** base 文件路径(约定 vault 根有 views.published.base) */
+function getBasePath(): string {
+  return join(getVaultRoot(), "views.published.base");
+}
+
 /** 读 base 文件 schema */
 export function getSchema(): ParsedBase {
   if (!schemaCache) {
-    schemaCache = parsePublishedBase(BASE_FILE);
+    const basePath = getBasePath();
+    if (!existsSync(basePath)) {
+      // 触发 vault 同步(首次 / build 阶段)
+      syncVault();
+    }
+    schemaCache = parsePublishedBase(getBasePath());
   }
   return schemaCache;
 }
@@ -72,35 +70,36 @@ export function getAllPublishedPosts(): VaultPost[] {
   if (postsCache) {
     return postsCache;
   }
-  const files = walk(VAULT_ROOT);
+  const root = getVaultRoot();
+  const useCache = root === join(process.cwd(), ".vault-cache");
   const posts: VaultPost[] = [];
-  for (const f of files) {
+  for (const f of getAllMarkdownFiles()) {
     try {
-      const { data } = matter(readFileSync(f, "utf8"));
+      const raw = useCache ? readVaultFile(f.path) : readFileSync(join(root, f.path), "utf8");
+      const { data } = matter(raw);
       if (data.published !== true) continue;
-      const filename = f.split(/[\\/]/).pop()!.replace(/\.md$/, "");
+      const filename = f.path.split("/").pop()!.replace(/\.md$/, "");
       const title = (data.title as string) ?? filename;
       const slug = (data.slug as string) ?? filename;
       posts.push({
         slug,
         title,
-        filePath: f,
+        filePath: f.path,
         data,
+        category: String(data["场景"] ?? "未分类"),
+        date: String(
+          data.date ?? data["date created"] ?? new Date().toISOString()
+        ),
+        tags: Array.isArray(data.tags) ? (data.tags as string[]) : [],
+        excerpt: String(data.excerpt ?? data.description ?? ""),
       });
     } catch {
       // 跳过解析失败的文件
     }
   }
-
-  // 二次遍历:填上兼容 PostCard 的字段
-  for (const post of posts) {
-    const { data } = post;
-    post.category = String(data["场景"] ?? "未分类");
-    post.date = String(data.date ?? data["date created"] ?? new Date().toISOString());
-    post.tags = Array.isArray(data.tags) ? (data.tags as string[]) : [];
-    post.excerpt = String(data.excerpt ?? data.description ?? "");
-  }
-  posts.sort((a, b) => String(b.data.date ?? "").localeCompare(String(a.data.date ?? "")));
+  posts.sort((a, b) =>
+    String(b.data.date ?? "").localeCompare(String(a.data.date ?? ""))
+  );
   postsCache = posts;
   return posts;
 }

@@ -178,68 +178,40 @@ export function getAllMarkdownFiles(): VaultFile[] {
   const root = join(process.cwd(), CACHE_DIR);
   const files: VaultFile[] = [];
 
-  for (const blogDir of config.content.dirs.blog) {
-    const fullPath = join(root, blogDir);
-    if (!existsSync(fullPath)) continue;
-    const items = readdirSync(fullPath);
-    for (const item of items) {
-      if (shouldExclude(item)) continue;
-      if (!(item.endsWith(".md") || item.endsWith(".mdx"))) continue;
-      files.push({ name: item, path: join(blogDir, item), type: "blog" });
-    }
-  }
-
-  for (const articleDir of config.content.dirs.article) {
-    const fullParent = join(root, articleDir);
-    if (!existsSync(fullParent)) continue;
-    const topItems = readdirSync(fullParent);
-    for (const topItem of topItems) {
-      if (shouldExclude(topItem)) continue;
-      const fullSubPath = join(fullParent, topItem);
-      if (!statSync(fullSubPath).isDirectory()) continue;
-      const chapterName = topItem.replace(NUM_PREFIX_REGEX, "");
-      const subItems = readdirSync(fullSubPath);
-      for (const subItem of subItems) {
-        if (shouldExclude(subItem)) continue;
-        if (!(subItem.endsWith(".md") || subItem.endsWith(".mdx"))) continue;
-        files.push({
-          chapterDir: chapterName,
-          name: subItem,
-          path: `${articleDir}/${topItem}/${subItem}`,
-          type: "article",
-        });
+  function walk(dir: string, relPath: string) {
+    for (const name of readdirSync(dir)) {
+      if (shouldExclude(name)) continue;
+      const full = join(dir, name);
+      const rel = relPath ? `${relPath}/${name}` : name;
+      if (statSync(full).isDirectory()) {
+        walk(full, rel);
+        continue;
       }
+      if (!(name.endsWith(".md") || name.endsWith(".mdx"))) continue;
+      // 派生 chapterDir:直接父目录名(剥数字前缀)
+      const parentSegs = rel.split("/").slice(0, -1);
+      const lastParent = parentSegs[parentSegs.length - 1];
+      const chapterDir = lastParent ? lastParent.replace(NUM_PREFIX_REGEX, "") : undefined;
+      files.push({
+        chapterDir,
+        name,
+        path: rel,
+        type: "article", // 字段保留,前端不再用
+      });
     }
   }
 
+  if (existsSync(root)) {
+    walk(root, "");
+  }
   return files;
 }
 
 // ─── 导航树（Tab 栏）────────────────────────────────
 
 export function buildNavTree(): NavItem[] {
+  // 目录扁平化:内部 tab 全部删除,只返回外链
   const items: NavItem[] = [];
-
-  // blog tab
-  for (const dir of config.content.dirs.blog) {
-    items.push({
-      isBlog: true,
-      label: dir.replace(NUM_PREFIX_REGEX, ""),
-      path: dir,
-      slug: "/",
-    });
-  }
-
-  // article tab（无二级菜单，点击直接进书）
-  for (const dir of config.content.dirs.article) {
-    items.push({
-      label: dir.replace(NUM_PREFIX_REGEX, ""),
-      path: dir,
-      slug: `/${encodeURIComponent(dir)}`,
-    });
-  }
-
-  // extra tabs
   for (const tab of config.content.extraTabs) {
     items.push({
       isExternal: true,
@@ -247,7 +219,6 @@ export function buildNavTree(): NavItem[] {
       slug: tab.href,
     });
   }
-
   return items;
 }
 
