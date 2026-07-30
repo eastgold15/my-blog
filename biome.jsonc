@@ -26,14 +26,17 @@
         "useDefaultSwitchClause": "off",
         "noParameterProperties": "off",
         "useErrorCause": "off",
-        "noNonNullAssertion": "off"
+        "noNonNullAssertion": "off",
+        "noNestedTernary": "off"
       },
       "a11y": {
         "noSvgWithoutTitle": "off"
       },
       "suspicious": {
         "noLeakedRender": "off",
-        "noUnnecessaryConditions": "off"
+        "noUnnecessaryConditions": "off",
+        "noEqualsToNull": "off",
+        "useAwait": "off"
       }
     }
   },

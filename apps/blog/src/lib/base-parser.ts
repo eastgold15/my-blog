@@ -86,7 +86,7 @@ function slugify(name: string): string {
 /** 扫描 vault 笔记,统计每个维度的所有取值 */
 export function collectDimensionValues(
   dimensions: Dimension[],
-  posts: Array<Record<string, unknown>>
+  posts: Record<string, unknown>[]
 ): Dimension[] {
   return dimensions.map((dim) => {
     const values = new Set<string>();

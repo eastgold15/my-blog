@@ -19,6 +19,8 @@ export interface BlogPost {
   published?: boolean;
   /** 预计阅读时间（分钟） */
   readingTime?: number;
+  /** 系列标识(章节归属) */
+  series?: string;
   /** 唯一标识 */
   slug: string;
   /** 标签列表 */
@@ -27,8 +29,6 @@ export interface BlogPost {
   title: string;
   /** vault 中的目录路径 */
   vaultDir?: string;
-  /** 系列标识(章节归属) */
-  series?: string;
 }
 
 export interface PostNavItem {

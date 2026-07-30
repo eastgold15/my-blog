@@ -38,6 +38,6 @@
     "tsdown": "latest",
     "typescript": "^5.0.0",
     "vitest": "latest",
-      "@types/node": "latest"
+    "@types/node": "latest"
   }
 }

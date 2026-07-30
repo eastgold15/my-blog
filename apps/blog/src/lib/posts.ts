@@ -3,8 +3,8 @@
  * 从本地 vault 缓存读取，0 次 GitHub API 调用
  */
 
-import type { BlogCategory, BlogPost, PostNavigationType } from "@/types/blog";
 import matter from "gray-matter";
+import type { BlogCategory, BlogPost, PostNavigationType } from "@/types/blog";
 import { generateSlug, parseBlogPost } from "./mdx";
 import { processObsidianSyntax } from "./obsidian";
 
