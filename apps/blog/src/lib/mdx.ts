@@ -72,15 +72,22 @@ export function calculateReadingTime(content: string): number {
 }
 
 /**
- * 从文件名生成 slug(纯文件名,跟 views.ts 保持一致)
- * 第二个参数保留但忽略——历史上曾用 category 做前缀,现统一
+ * 从文件名生成 slug
+ * 规则:
+ *  - 全部小写
+ *  - 保留:字母、数字、中文、英文小数点(.)、连字符(-)
+ *  - 其余符号(空格、`#`、`/` 等)替换为 -
+ *  - 连续 - 合并,首尾去 -
+ * 不粗暴删除 . 原因:`5.git` 删点变 `5git` 丢失语义
  */
 export function generateSlug(filename: string, _category?: string): string {
   return filename
-    .replace(mdReg, "")
+    .replace(mdReg, "") // 去 .md / .mdx
     .toLowerCase()
-    .replace(/\s+/g, "-")
-    .replace(/[^\w\-一-龥]/g, "");
+    .replace(/\s+/g, "-") // 空格 → -
+    .replace(/[^a-z0-9一-龥.\-]/g, "-") // 非法字符 → -
+    .replace(/-+/g, "-") // 连续 - 合并
+    .replace(/^-+|-+$/g, ""); // 去首尾 -
 }
 
 /**
