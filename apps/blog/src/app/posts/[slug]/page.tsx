@@ -52,23 +52,26 @@ export async function generateMetadata({
 }
 
 /** 判断是否为 article 类型（有章节结构的） */
-function isArticle(vaultDir?: string): boolean {
-  if (!vaultDir) {
-    return false;
-  }
-  return config.content.dirs.article.some((dir) => vaultDir.startsWith(dir));
+/** 是否带章节:frontmatter series 优先,否则看 vaultDir 是否在子目录 */
+function isArticle(
+  vaultDir?: string,
+  data?: Record<string, unknown>
+): boolean {
+  if (data?.series) return true;
+  if (vaultDir && vaultDir.split("/").length >= 1) return true;
+  return false;
 }
 
-/** 从 vaultDir 提取章节名称 */
-function getChapterName(vaultDir?: string): string {
-  if (!vaultDir) {
-    return "";
-  }
+/** 从 frontmatter series 或 vaultDir 提取章节名 */
+function getChapterName(
+  vaultDir?: string,
+  data?: Record<string, unknown>
+): string {
+  if (data?.series) return String(data.series);
+  if (!vaultDir) return "";
   const parts = vaultDir.split("/");
-  // 对于 "1-全栈/elysia"，取 "elysia"
-  // 对于 "1-全栈/elysia/sub"，取 "elysia/sub"
-  if (parts.length >= 2) {
-    return parts.slice(1).join("/");
+  if (parts.length >= 1) {
+    return parts[parts.length - 1].replace(/^[0-9]+[-.]/, "");
   }
   return vaultDir;
 }
@@ -112,9 +115,9 @@ export default async function PostPage({
     );
   }
 
-  // 判断文章类型
-  const articleType = isArticle(post.vaultDir);
-  const chapterName = getChapterName(post.vaultDir);
+  // 判断文章类型(用 series 优先,vaultDir 兜底)
+  const articleType = isArticle(post.vaultDir, post as unknown as Record<string, unknown>);
+  const chapterName = getChapterName(post.vaultDir, post as unknown as Record<string, unknown>);
 
   // 文章导航（上一篇/下一篇）
   const currentIndex = allPosts.findIndex(

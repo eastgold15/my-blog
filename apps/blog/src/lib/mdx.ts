@@ -118,6 +118,7 @@ export function parseBlogPost(
     draft: frontmatter.draft,
     excerpt: frontmatter.description || generateExcerpt(content),
     readingTime: calculateReadingTime(content),
+    series: frontmatter.series,
     tags: frontmatter.tags || [],
     title: frontmatter.title || filename.replace(mdReg, ""),
   };

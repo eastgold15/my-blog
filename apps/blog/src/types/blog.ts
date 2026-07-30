@@ -25,6 +25,8 @@ export interface BlogPost {
   title: string;
   /** vault 中的目录路径 */
   vaultDir?: string;
+  /** 系列标识(章节归属) */
+  series?: string;
 }
 
 export interface PostNavItem {
