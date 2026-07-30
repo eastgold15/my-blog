@@ -1,12 +1,22 @@
 {
-  "name": "my-blog",
-  "module": "index.ts",
-  "type": "module",
-  "private": true,
   "devDependencies": {
-    "@types/bun": "latest"
+    "@biomejs/biome": "2.5.3",
+    "@types/bun": "latest",
+    "ultracite": "7.9.4"
   },
+  "name": "my-blog",
   "peerDependencies": {
     "typescript": "^5"
+  },
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "module": "index.ts",
+  "private": true,
+  "scripts": {
+    "check": "ultracite check",
+    "fix": "ultracite fix"
   }
 }
