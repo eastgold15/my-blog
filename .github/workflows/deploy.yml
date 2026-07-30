@@ -2,8 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   # 触发条件：当推送到 main 分支时
-  push:
-    branches: ["main"] # 监听 main 分支的提交
+  workflow_dispatch:
 
 permissions:
   contents: read
