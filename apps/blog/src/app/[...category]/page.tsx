@@ -122,7 +122,7 @@ export async function generateMetadata({
     NUM_PREFIX_REGEX,
     ""
   );
-  return { title: `${name} - 我的博客`, description: `${name} 的内容` };
+  return { description: `${name} 的内容`, title: `${name} - 我的博客` };
 }
 
 // ─── 读书视图 ────────────────────────────────────────

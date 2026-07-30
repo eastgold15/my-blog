@@ -61,29 +61,29 @@ export interface BlogConfig {
 }
 
 export const config: BlogConfig = {
-  vault: {
-    repo: process.env.BLOG_GITHUB_REPO || "SCUJJ-OSIG/knowledge_base",
-    owner: process.env.NEXT_PUBLIC_GITHUB_OWNER || "SCUJJ-OSIG",
-    name: process.env.NEXT_PUBLIC_GITHUB_REPO || "knowledge_base",
-    branch: process.env.NEXT_PUBLIC_GITHUB_BRANCH || "main",
-    cacheDir: ".vault-cache",
-    githubToken: process.env.BLOG_GITHUB_TOKEN || "",
-  },
   blog: {
-    title: "pori博客",
-    description: "无情记下每一笔",
     author: "博主",
+    description: "无情记下每一笔",
+    title: "pori博客",
   },
   content: {
     dirs: {
-      blog: ["0-blog"],
       article: ["4-全栈", "2-技术文章", "1-自用软件"],
+      blog: ["0-blog"],
     },
-    extraTabs: [{ label: "GitHub", href: "https://github.com/eastgold15" }],
     exclude: {
-      prefix: ["_", "."],
       dirs: ["templates", "drafts", "assets", ".git", ".obsidian"],
       files: ["CLAUDE.md"],
+      prefix: ["_", "."],
     },
+    extraTabs: [{ href: "https://github.com/eastgold15", label: "GitHub" }],
+  },
+  vault: {
+    branch: process.env.NEXT_PUBLIC_GITHUB_BRANCH || "main",
+    cacheDir: ".vault-cache",
+    githubToken: process.env.BLOG_GITHUB_TOKEN || "",
+    name: process.env.NEXT_PUBLIC_GITHUB_REPO || "knowledge_base",
+    owner: process.env.NEXT_PUBLIC_GITHUB_OWNER || "SCUJJ-OSIG",
+    repo: process.env.BLOG_GITHUB_REPO || "SCUJJ-OSIG/knowledge_base",
   },
 };

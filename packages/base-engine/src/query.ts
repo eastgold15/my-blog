@@ -76,16 +76,16 @@ type BaseRow = {
 export function queryBase(
   base: BaseDefinition,
   inspections: BaseFileInspection[],
-  options: BaseQueryOptions = {},
+  options: BaseQueryOptions = {}
 ): BaseQueryResult {
   const byPath = new Map(
-    inspections.map((inspection) => [inspection.file.path, inspection]),
+    inspections.map((inspection) => [inspection.file.path, inspection])
   );
   const byBasename = new Map(
     inspections.map((inspection) => [
       normalizeComparable(inspection.file.basename),
       inspection,
-    ]),
+    ])
   );
   const context = options.context ? byPath.get(options.context) : undefined;
   const view = selectView(base, options.view);
@@ -94,18 +94,18 @@ export function queryBase(
 
   for (const inspection of inspections) {
     const formulas = evaluateFormulas(base, inspection, {
-      row: inspection,
+      byBasename,
+      byPath,
       context,
       formulas: {},
-      byPath,
-      byBasename,
+      row: inspection,
     });
     const evalContext = {
-      row: inspection,
+      byBasename,
+      byPath,
       context,
       formulas,
-      byPath,
-      byBasename,
+      row: inspection,
     };
     if (
       inspection.file.kind !== "markdown" ||
@@ -117,18 +117,18 @@ export function queryBase(
 
     rows.push({
       file: sanitizeRowFile(inspection.file),
-      values: Object.fromEntries(
-        columns.map((column) => [
-          column.id,
-          readColumnValue(column.id, evalContext),
-        ]),
-      ),
       formulas,
       sortValues: Object.fromEntries(
         (view?.sort ?? []).map((item) => [
           item.property,
           readColumnValue(item.property, evalContext),
-        ]),
+        ])
+      ),
+      values: Object.fromEntries(
+        columns.map((column) => [
+          column.id,
+          readColumnValue(column.id, evalContext),
+        ])
       ),
     });
   }
@@ -140,20 +140,20 @@ export function queryBase(
 
   return {
     base: base.path,
-    view: view?.name,
-    context: options.context,
-    meta: buildMeta(view),
     columns: resolvedColumns,
-    rows: limitedRows.map((row) => projectRow(row, resolvedColumns)),
+    context: options.context,
     groups: buildGroups(limitedRows, view),
+    meta: buildMeta(view),
+    rows: limitedRows.map((row) => projectRow(row, resolvedColumns)),
     summaries: buildSummaries(limitedRows, view, base),
+    view: view?.name,
   };
 }
 
 function evaluateFormulas(
   base: BaseDefinition,
   _inspection: BaseFileInspection,
-  context: EvaluationContext,
+  context: EvaluationContext
 ): Record<string, unknown> {
   const formulas: Record<string, unknown> = {};
   const evalContext = { ...context, formulas };
@@ -173,7 +173,7 @@ function evaluateFormulas(
       throw new BaseEngineError(
         "FORMULA_EVAL_ERROR",
         `Circular formula reference: ${name}`,
-        { formula: name },
+        { formula: name }
       );
     }
 
@@ -195,7 +195,7 @@ function evaluateFormulas(
           : new BaseEngineError(
               "FORMULA_EVAL_ERROR",
               error instanceof Error ? error.message : String(error),
-              { formula: name },
+              { formula: name }
             );
     }
     evaluating.delete(name);
@@ -211,7 +211,7 @@ function evaluateFormulas(
 
 function evaluateFilters(
   filters: unknown,
-  context: EvaluationContext,
+  context: EvaluationContext
 ): boolean {
   if (!filters) {
     return true;
@@ -263,7 +263,7 @@ function readColumnValue(id: string, context: EvaluationContext): unknown {
 
 function selectView(
   base: BaseDefinition,
-  requested: string | undefined,
+  requested: string | undefined
 ): BaseView | undefined {
   if (!requested) {
     return base.views[0];
@@ -274,7 +274,7 @@ function selectView(
     throw new BaseEngineError(
       "BASE_VIEW_NOT_FOUND",
       `View not found: ${requested}`,
-      { requested, availableViews: base.views.map((v) => v.name) },
+      { availableViews: base.views.map((v) => v.name), requested }
     );
   }
 
@@ -283,7 +283,7 @@ function selectView(
 
 function buildColumns(
   base: BaseDefinition,
-  view: BaseView | undefined,
+  view: BaseView | undefined
 ): BaseColumn[] {
   const ids =
     view?.order && view.order.length > 0
@@ -293,8 +293,8 @@ function buildColumns(
   return ids.map((id) => {
     const property = findPropertyConfig(base.properties, id);
     return {
-      id,
       displayName: property?.displayName ?? defaultDisplayName(id),
+      id,
       type: valueType(property),
     };
   });
@@ -321,7 +321,7 @@ function defaultDisplayName(id: string): string {
 
 function findPropertyConfig(
   properties: Record<string, BasePropertyConfig>,
-  id: string,
+  id: string
 ): BasePropertyConfig | undefined {
   return properties[id] ?? properties[`note.${id}`] ?? properties[`file.${id}`];
 }
@@ -332,14 +332,14 @@ function valueType(_property: BasePropertyConfig | undefined): string {
 
 function buildMeta(view: BaseView | undefined): BaseQueryMeta {
   return {
-    type: view?.type,
-    name: view?.name,
     filters: view?.filters,
+    groupBy: view?.groupBy,
+    limit: view?.limit,
+    name: view?.name,
     order: view?.order ?? [],
     sort: view?.sort,
-    limit: view?.limit,
-    groupBy: view?.groupBy,
     summaries: view?.summaries,
+    type: view?.type,
   };
 }
 
@@ -348,30 +348,30 @@ function projectRow(row: BaseRow, columns: BaseColumn[]): BaseQueryRow {
     columns.map((column) => [
       column.id,
       Object.hasOwn(row.values, column.id) ? row.values[column.id] : null,
-    ]),
+    ])
   );
   const file = {
-    path: row.file.path,
     name: row.file.name,
+    path: row.file.path,
   };
   Object.defineProperties(file, {
-    basename: { value: row.file.basename, enumerable: false },
-    ext: { value: row.file.ext, enumerable: false },
-    folder: { value: row.file.folder, enumerable: false },
-    size: { value: row.file.size, enumerable: false },
-    ctime: { value: row.file.ctime, enumerable: false },
-    mtime: { value: row.file.mtime, enumerable: false },
+    basename: { enumerable: false, value: row.file.basename },
+    ctime: { enumerable: false, value: row.file.ctime },
+    ext: { enumerable: false, value: row.file.ext },
+    folder: { enumerable: false, value: row.file.folder },
+    mtime: { enumerable: false, value: row.file.mtime },
+    size: { enumerable: false, value: row.file.size },
   });
 
   const projected = {
-    file,
     data,
+    file,
   };
 
   Object.defineProperties(projected, {
-    values: { value: row.values, enumerable: false },
-    formulas: { value: row.formulas, enumerable: false },
-    sortValues: { value: row.sortValues, enumerable: false },
+    formulas: { enumerable: false, value: row.formulas },
+    sortValues: { enumerable: false, value: row.sortValues },
+    values: { enumerable: false, value: row.values },
   });
 
   return projected;
@@ -380,7 +380,7 @@ function projectRow(row: BaseRow, columns: BaseColumn[]): BaseQueryRow {
 function resolveColumnTypes(
   columns: BaseColumn[],
   rows: BaseRow[],
-  inspections: BaseFileInspection[],
+  inspections: BaseFileInspection[]
 ): BaseColumn[] {
   return columns.map((column) => ({
     ...column,
@@ -391,12 +391,12 @@ function resolveColumnTypes(
 function resolveColumnType(
   id: string,
   rows: BaseRow[],
-  inspections: BaseFileInspection[],
+  inspections: BaseFileInspection[]
 ): string {
   const propertyName = id.replace(/^note\./u, "");
   for (const inspection of inspections) {
     const property = inspection.properties.find(
-      (candidate) => candidate.name === propertyName,
+      (candidate) => candidate.name === propertyName
     );
     if (property?.valueType) {
       return normalizeColumnType(property.valueType);
@@ -468,7 +468,7 @@ function compareRows(
   left: BaseRow,
   right: BaseRow,
   sort: BaseSort[] | undefined,
-  columns: BaseColumn[] = [],
+  columns: BaseColumn[] = []
 ): number {
   for (const item of sort ?? []) {
     const leftValue =
@@ -509,7 +509,7 @@ function buildGroups(rows: BaseRow[], view: BaseView | undefined): unknown[] {
     for (const row of rows) {
       const value = row.values[id] ?? row.formulas[formulaName(id)] ?? null;
       const key = comparableKey(value);
-      const bucket = buckets.get(key) ?? { value, rows: [] };
+      const bucket = buckets.get(key) ?? { rows: [], value };
       bucket.rows.push(row);
       buckets.set(key, bucket);
     }
@@ -521,13 +521,13 @@ function buildGroups(rows: BaseRow[], view: BaseView | undefined): unknown[] {
     });
 
     return {
-      property: id,
-      direction,
       buckets: sortedBuckets.map((bucket) => ({
-        value: bucket.value,
         count: bucket.rows.length,
         rows: bucket.rows.map((row) => row.file.path),
+        value: bucket.value,
       })),
+      direction,
+      property: id,
     };
   });
 }
@@ -535,7 +535,7 @@ function buildGroups(rows: BaseRow[], view: BaseView | undefined): unknown[] {
 function buildSummaries(
   rows: BaseRow[],
   view: BaseView | undefined,
-  base: BaseDefinition,
+  base: BaseDefinition
 ): Record<string, unknown> {
   const summaries: Record<string, unknown> = {
     count: rows.length,
@@ -543,14 +543,14 @@ function buildSummaries(
 
   for (const [key, requestedSummary] of Object.entries(view?.summaries ?? {})) {
     const values = rows.map(
-      (row) => row.values[key] ?? row.formulas[formulaName(key)] ?? null,
+      (row) => row.values[key] ?? row.formulas[formulaName(key)] ?? null
     );
     summaries[key] = summarizeValues(
       values,
       typeof requestedSummary === "string"
         ? requestedSummary
         : String(requestedSummary),
-      base,
+      base
     );
   }
 
@@ -560,15 +560,15 @@ function buildSummaries(
 function summarizeValues(
   values: unknown[],
   requestedSummary: string,
-  base: BaseDefinition,
+  base: BaseDefinition
 ): unknown {
   const custom = base.summaries?.[requestedSummary];
   if (custom) {
     return evaluateExpression(parseExpression(custom), {
-      row: emptySummaryInspection(),
-      formulas: {},
-      byPath: new Map(),
       byBasename: new Map(),
+      byPath: new Map(),
+      formulas: {},
+      row: emptySummaryInspection(),
       values,
     });
   }
@@ -610,27 +610,27 @@ function summarizeValues(
   }
 
   return {
+    average: meanNumbers(numbers),
     count: numbers.length,
     sum: sumNumbers(numbers),
-    average: meanNumbers(numbers),
   };
 }
 
 function emptySummaryInspection(): BaseFileInspection {
   return {
+    backlinks: [],
+    embeds: [],
     file: {
-      path: "",
-      name: "",
       basename: "",
       ext: "",
       folder: "",
       kind: "markdown",
+      name: "",
+      path: "",
     },
+    links: [],
     properties: [],
     tags: [],
-    links: [],
-    backlinks: [],
-    embeds: [],
   };
 }
 
@@ -672,14 +672,14 @@ function comparableKey(value: unknown): string {
 
 function sanitizeRowFile(file: BaseFileInspection["file"]): BaseRow["file"] {
   return {
-    path: file.path,
-    name: file.basename,
     basename: file.basename,
+    ctime: file.ctime,
     ext: file.ext,
     folder: file.folder,
-    size: file.size,
-    ctime: file.ctime,
     mtime: file.mtime,
+    name: file.basename,
+    path: file.path,
+    size: file.size,
   };
 }
 

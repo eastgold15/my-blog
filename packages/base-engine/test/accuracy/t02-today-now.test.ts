@@ -23,7 +23,7 @@ describe("today() vs now()", () => {
         "      - formula.TodayHour",
         "      - formula.NowHour",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
 
     expect(f(result, "TodayHour")).toBe(0);
@@ -42,7 +42,7 @@ describe("today() vs now()", () => {
         "      - file.name",
         "      - formula.Diff",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
 
     expect(f(result, "Diff")).toBeGreaterThanOrEqual(0);

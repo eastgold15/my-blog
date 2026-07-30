@@ -7,19 +7,18 @@ const isGitHubActions = process.env.GITHUB_ACTIONS === "true";
 const isDev = process.env.NODE_ENV === "development";
 
 const nextConfig: NextConfig = {
-  reactCompiler: true,
-
-  // 生产环境使用静态导出
-  output: isDev ? undefined : "export",
+  // 只在 GitHub Actions 添加 basePath
+  basePath: isGitHubActions ? "/my-blog" : "",
 
   images: {
     unoptimized: true,
   },
 
-  // 只在 GitHub Actions 添加 basePath
-  basePath: isGitHubActions ? "/my-blog" : "",
+  // 生产环境使用静态导出
+  output: isDev ? undefined : "export",
 
   pageExtensions: ["js", "jsx", "md", "mdx", "ts", "tsx"],
+  reactCompiler: true,
 };
 
 const withMDX = createMDX({

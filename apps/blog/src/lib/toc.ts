@@ -40,10 +40,10 @@ export function generateTOC(content: string): TocItem[] {
     const id = slugger.slug(title);
 
     headings.push({
-      title,
-      level,
-      id,
       children: [],
+      id,
+      level,
+      title,
     });
   }
 

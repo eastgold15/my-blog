@@ -58,8 +58,8 @@ export function TableOfContents({ toc, title }: TableOfContentsProps) {
         elementPosition + window.pageYOffset - headerOffset;
 
       window.scrollTo({
-        top: offsetPosition,
         behavior: "smooth",
+        top: offsetPosition,
       });
 
       // 更新 URL hash

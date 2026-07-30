@@ -28,7 +28,7 @@ describe("Base query engine", () => {
         "      direction: DESC",
         "    summaries:",
         "      rating: average",
-      ].join("\n"),
+      ].join("\n")
     );
     const result = queryBase(
       base,
@@ -36,7 +36,7 @@ describe("Base query engine", () => {
       {
         context: "People/Robin Sloan.md",
         view: "Mentions context",
-      },
+      }
     );
 
     expect(result.rows).toHaveLength(1);
@@ -44,17 +44,17 @@ describe("Base query engine", () => {
       {
         file: { path: "Sources/B.md" },
         values: {
+          "formula.doubled": 10,
           "note.title": "B",
           rating: 5,
-          "formula.doubled": 10,
         },
       },
     ]);
     expect(result.groups).toEqual([
       {
-        property: "rating",
+        buckets: [{ count: 1, rows: ["Sources/B.md"], value: 5 }],
         direction: "DESC",
-        buckets: [{ value: 5, count: 1, rows: ["Sources/B.md"] }],
+        property: "rating",
       },
     ]);
     expect(result.summaries).toEqual({
@@ -75,7 +75,7 @@ describe("Base query engine", () => {
         "      - rating",
         "    summaries:",
         "      rating: roundedMean",
-      ].join("\n"),
+      ].join("\n")
     );
     const result = queryBase(base, [
       file("A.md", "A", [{ name: "rating", value: 2 }]),
@@ -101,7 +101,7 @@ describe("Base query engine", () => {
         "    order:",
         "      - formula.Color",
         "      - formula.RelatedCount",
-      ].join("\n"),
+      ].join("\n")
     );
     const result = queryBase(
       base,
@@ -110,22 +110,22 @@ describe("Base query engine", () => {
           "Categories/Cafes.md",
           "Cafes",
           [],
-          [{ name: "color", value: "red" }],
+          [{ name: "color", value: "red" }]
         ),
         linkedFile(
           "Places/No Type.md",
           "No Type",
           ["Categories/Cafes.md"],
-          [{ name: "type", value: [] }],
+          [{ name: "type", value: [] }]
         ),
         linkedFile(
           "Places/Typed.md",
           "Typed",
           ["Categories/Cafes.md"],
-          [{ name: "type", value: ["[[Cafes]]"] }],
+          [{ name: "type", value: ["[[Cafes]]"] }]
         ),
       ],
-      { context: "Places/Typed.md" },
+      { context: "Places/Typed.md" }
     );
 
     expect(result.rows).toMatchObject([
@@ -157,7 +157,7 @@ describe("Base query engine", () => {
         "        - '!note.last.isEmpty()'",
         "    order:",
         "      - formula.Age",
-      ].join("\n"),
+      ].join("\n")
     );
     const result = queryBase(base, [
       file("People/With Date.md", "With Date", [
@@ -190,7 +190,7 @@ describe("Base query engine", () => {
         "      - file.basename",
         "      - file.kind",
         "      - file.indexedAt",
-      ].join("\n"),
+      ].join("\n")
     );
     const result = queryBase(base, [
       file("References/Out of Control.md", "Out of Control", []),
@@ -199,10 +199,10 @@ describe("Base query engine", () => {
     expect(result.rows).toMatchObject([
       {
         values: {
-          "file.name": "Out of Control",
           "file.basename": "Out of Control",
-          "file.kind": null,
           "file.indexedAt": null,
+          "file.kind": null,
+          "file.name": "Out of Control",
         },
       },
     ]);
@@ -218,7 +218,7 @@ describe("Base query engine", () => {
         "      - date",
         "formulas:",
         '  Parsed: date("2023-09-12").toString()',
-      ].join("\n"),
+      ].join("\n")
     );
     const result = queryBase(base, [
       file("Notes/Meeting.md", "Meeting", [
@@ -228,11 +228,11 @@ describe("Base query engine", () => {
 
     expect(result.rows).toMatchObject([
       {
-        values: {
-          date: "2023-09-12",
-        },
         formulas: {
           Parsed: "2023-09-12",
+        },
+        values: {
+          date: "2023-09-12",
         },
       },
     ]);
@@ -252,16 +252,16 @@ describe("Base query engine", () => {
         "      - formula.N",
         "      - formula.D",
         "      - formula.L",
-      ].join("\n"),
+      ].join("\n")
     );
     const result = queryBase(base, [file("Test.md", "Test", [])]);
 
     expect(result.rows).toMatchObject([
       {
         formulas: {
-          N: 3.14,
           D: 7,
           L: "[[test]]",
+          N: 3.14,
         },
       },
     ]);
@@ -281,7 +281,7 @@ describe("Base query engine", () => {
         "      - formula.HasAll",
         "      - formula.Joined",
         "      - formula.Sorted",
-      ].join("\n"),
+      ].join("\n")
     );
     const result = queryBase(base, [
       file("A.md", "A", [{ name: "tags", value: ["a", "b", "c"] }]),
@@ -308,7 +308,7 @@ describe("Base query engine", () => {
         "    order:",
         "      - formula.IsAi",
         "      - formula.Fmt",
-      ].join("\n"),
+      ].join("\n")
     );
     const result = queryBase(base, [
       file("AI Notes.md", "AI Notes", []),
@@ -339,7 +339,7 @@ function linkedFile(
   path: string,
   basename: string,
   links: string[],
-  properties: BaseFileInspection["properties"],
+  properties: BaseFileInspection["properties"]
 ): BaseFileInspection {
   return {
     ...file(path, basename, properties),
@@ -350,21 +350,21 @@ function linkedFile(
 function file(
   path: string,
   basename: string,
-  properties: BaseFileInspection["properties"],
+  properties: BaseFileInspection["properties"]
 ): BaseFileInspection {
   return {
+    backlinks: [],
+    embeds: [],
     file: {
-      path,
-      name: `${basename}.md`,
       basename,
       ext: ".md",
       folder: path.split("/").slice(0, -1).join("/"),
       kind: "markdown",
+      name: `${basename}.md`,
+      path,
     },
+    links: [],
     properties,
     tags: [],
-    links: [],
-    backlinks: [],
-    embeds: [],
   };
 }

@@ -24,7 +24,7 @@ describe("min() and max()", () => {
         "      - file.name",
         "      - formula.M",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     expect(f(result, "M")).toBe(1);
   });
@@ -41,7 +41,7 @@ describe("min() and max()", () => {
         "      - file.name",
         "      - formula.M",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     expect(f(result, "M")).toBe(4);
   });
@@ -60,7 +60,7 @@ describe("number()", () => {
         "      - file.name",
         "      - formula.N",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     expect(f(result, "N")).toBeCloseTo(3.14, 2);
   });
@@ -77,7 +77,7 @@ describe("number()", () => {
         "      - file.name",
         "      - formula.N",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     // Obsidian: Error: Unable to parse "abc" as a number.
     expect(f(result, "N")).toBeInstanceOf(BaseEngineError);
@@ -95,7 +95,7 @@ describe("number()", () => {
         "      - file.name",
         "      - formula.N",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     expect(f(result, "N")).toBe(1);
   });

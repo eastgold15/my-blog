@@ -5,8 +5,8 @@ import { HeaderWrapper } from "@/components/layout/header-wrapper";
 import { config } from "@/configs/config";
 
 export const metadata: Metadata = {
-  title: config.blog.title,
   description: config.blog.description,
+  title: config.blog.title,
 };
 
 export default function RootLayout({

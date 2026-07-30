@@ -25,7 +25,7 @@ describe("date methods", () => {
         "      - file.name",
         "      - formula.D",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     const val = f(result, "D") as Date;
     expect(val).toBeInstanceOf(Date);
@@ -46,7 +46,7 @@ describe("date methods", () => {
         "      - file.name",
         "      - formula.T",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     expect(f(result, "T")).toMatch(/^\d{2}:\d{2}:\d{2}$/);
   });
@@ -67,16 +67,16 @@ describe("date methods", () => {
       [
         file("Test.md", "Test", [], {
           file: {
-            path: "Test.md",
-            name: "Test.md",
             basename: "Test",
             ext: ".md",
             folder: "",
             kind: "markdown",
             mtime: now.toISOString(),
+            name: "Test.md",
+            path: "Test.md",
           },
         }),
-      ],
+      ]
     );
     const val = f(result, "R");
     expect(typeof val).toBe("string");
@@ -95,7 +95,7 @@ describe("date methods", () => {
         "      - file.name",
         "      - formula.E",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     expect(f(result, "E")).toBe(false);
   });
@@ -112,7 +112,7 @@ describe("date methods", () => {
         "      - file.name",
         "      - formula.H",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     const val = f(result, "H") as number;
     expect(typeof val).toBe("number");
@@ -132,7 +132,7 @@ describe("date methods", () => {
         "      - file.name",
         "      - formula.M",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     const val = f(result, "M") as number;
     expect(typeof val).toBe("number");
@@ -152,7 +152,7 @@ describe("date methods", () => {
         "      - file.name",
         "      - formula.Y",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     expect(f(result, "Y")).toBe(2023);
   });
@@ -169,7 +169,7 @@ describe("date methods", () => {
         "      - file.name",
         "      - formula.M",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     expect(f(result, "M")).toBe(9);
   });
@@ -186,7 +186,7 @@ describe("date methods", () => {
         "      - file.name",
         "      - formula.D",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     expect(f(result, "D")).toBe(12);
   });
@@ -205,7 +205,7 @@ describe("date.format() Moment.js patterns", () => {
         "      - file.name",
         "      - formula.D",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     expect(f(result, "D")).toBe("Tuesday");
   });
@@ -222,7 +222,7 @@ describe("date.format() Moment.js patterns", () => {
         "      - file.name",
         "      - formula.M",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     expect(f(result, "M")).toBe("Sep");
   });
@@ -239,7 +239,7 @@ describe("date.format() Moment.js patterns", () => {
         "      - file.name",
         "      - formula.F",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     expect(f(result, "F")).toBe("Tuesday, September 12th, 2023");
   });

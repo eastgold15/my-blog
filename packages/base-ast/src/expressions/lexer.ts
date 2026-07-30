@@ -30,26 +30,26 @@ export function lexExpression(source: string): Token[] {
 
     const two = source.slice(index, index + 2);
     if (OPERATORS.includes(two as (typeof OPERATORS)[number])) {
-      tokens.push({ type: "operator", lexeme: two });
+      tokens.push({ lexeme: two, type: "operator" });
       index += 2;
       continue;
     }
 
     if (SINGLE.has(char)) {
-      tokens.push({ type: "operator", lexeme: char });
+      tokens.push({ lexeme: char, type: "operator" });
       index += 1;
       continue;
     }
 
     if (PUNCT.has(char)) {
-      tokens.push({ type: "punct", lexeme: char });
+      tokens.push({ lexeme: char, type: "punct" });
       index += 1;
       continue;
     }
 
     if (char === '"' || char === "'") {
       const parsed = readString(source, index, char);
-      tokens.push({ type: "string", lexeme: parsed.raw, value: parsed.value });
+      tokens.push({ lexeme: parsed.raw, type: "string", value: parsed.value });
       index = parsed.next;
       continue;
     }
@@ -62,15 +62,15 @@ export function lexExpression(source: string): Token[] {
       if (expectsOperand(tokens[tokens.length - 1])) {
         const parsed = readRegex(source, index);
         tokens.push({
-          type: "regex",
           lexeme: parsed.raw,
+          type: "regex",
           value: parsed.value,
         });
         index = parsed.next;
         continue;
       }
 
-      tokens.push({ type: "operator", lexeme: "/" });
+      tokens.push({ lexeme: "/", type: "operator" });
       index += 1;
       continue;
     }
@@ -79,8 +79,8 @@ export function lexExpression(source: string): Token[] {
       const match = source.slice(index).match(/^\d+(?:\.\d+)?/u);
       if (match) {
         tokens.push({
-          type: "number",
           lexeme: match[0],
+          type: "number",
           value: Number(match[0]),
         });
         index += match[0].length;
@@ -91,7 +91,7 @@ export function lexExpression(source: string): Token[] {
     if (/[A-Za-z_]/u.test(char)) {
       const match = source.slice(index).match(/^[A-Za-z_][A-Za-z0-9_-]*/u);
       if (match) {
-        tokens.push({ type: "identifier", lexeme: match[0] });
+        tokens.push({ lexeme: match[0], type: "identifier" });
         index += match[0].length;
         continue;
       }
@@ -100,7 +100,7 @@ export function lexExpression(source: string): Token[] {
     throw new Error(`Unexpected token near "${source.slice(index)}"`);
   }
 
-  tokens.push({ type: "eof", lexeme: "" });
+  tokens.push({ lexeme: "", type: "eof" });
   return tokens;
 }
 
@@ -120,7 +120,7 @@ function expectsOperand(prev?: Token): boolean {
 
 function readRegex(
   source: string,
-  start: number,
+  start: number
 ): { raw: string; value: { pattern: string; flags: string }; next: number } {
   let index = start + 1; // skip opening /
   let pattern = "";
@@ -161,9 +161,9 @@ function readRegex(
       const flags = flagMatch?.[0] ?? "";
 
       return {
-        raw: raw + flags,
-        value: { pattern, flags },
         next: flagStart + flags.length,
+        raw: raw + flags,
+        value: { flags, pattern },
       };
     }
 
@@ -177,7 +177,7 @@ function readRegex(
 function readString(
   source: string,
   start: number,
-  quote: string,
+  quote: string
 ): { raw: string; value: string; next: number } {
   let value = "";
   let index = start + 1;
@@ -186,9 +186,9 @@ function readString(
     const char = source[index] ?? "";
     if (char === quote) {
       return {
+        next: index + 1,
         raw: source.slice(start, index + 1),
         value,
-        next: index + 1,
       };
     }
 

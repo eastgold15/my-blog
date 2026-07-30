@@ -46,8 +46,8 @@ export async function generateMetadata({
   }
 
   return {
-    title: post.title,
     description: post.excerpt,
+    title: post.title,
   };
 }
 
@@ -121,11 +121,11 @@ export default async function PostPage({
     (p) => p.slug === slug || p.slug === decodedSlug
   );
   const navigation = {
-    prev: currentIndex > 0 ? allPosts[currentIndex - 1] : undefined,
     next:
       currentIndex < allPosts.length - 1
         ? allPosts[currentIndex + 1]
         : undefined,
+    prev: currentIndex > 0 ? allPosts[currentIndex - 1] : undefined,
   };
 
   // 章节文章（左侧导航用）

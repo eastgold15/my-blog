@@ -25,7 +25,7 @@ describe("duration fields on date subtraction", () => {
         "      - file.name",
         "      - formula.AgeDays",
       ].join("\n"),
-      [file("A.md", "A", [{ name: "birthday", value: "2000-06-15" }])],
+      [file("A.md", "A", [{ name: "birthday", value: "2000-06-15" }])]
     );
 
     const val = f(result, "AgeDays");
@@ -45,11 +45,11 @@ describe("duration fields on date subtraction", () => {
         "      - file.name",
         "      - formula.AgeHours",
       ].join("\n"),
-      [file("A.md", "A", [{ name: "birthday", value: "2000-06-15" }])],
+      [file("A.md", "A", [{ name: "birthday", value: "2000-06-15" }])]
     );
 
     expect(typeof f(result, "AgeHours")).toBe("number");
-    expect(f(result, "AgeHours")).toBeGreaterThan(200000);
+    expect(f(result, "AgeHours")).toBeGreaterThan(200_000);
   });
 
   it("date subtraction .minutes returns total minutes", () => {
@@ -64,11 +64,11 @@ describe("duration fields on date subtraction", () => {
         "      - file.name",
         "      - formula.AgeMinutes",
       ].join("\n"),
-      [file("A.md", "A", [{ name: "birthday", value: "2000-06-15" }])],
+      [file("A.md", "A", [{ name: "birthday", value: "2000-06-15" }])]
     );
 
     expect(typeof f(result, "AgeMinutes")).toBe("number");
-    expect(f(result, "AgeMinutes")).toBeGreaterThan(10000000);
+    expect(f(result, "AgeMinutes")).toBeGreaterThan(10_000_000);
   });
 
   it("date subtraction .seconds returns total seconds", () => {
@@ -83,11 +83,11 @@ describe("duration fields on date subtraction", () => {
         "      - file.name",
         "      - formula.AgeSeconds",
       ].join("\n"),
-      [file("A.md", "A", [{ name: "birthday", value: "2000-06-15" }])],
+      [file("A.md", "A", [{ name: "birthday", value: "2000-06-15" }])]
     );
 
     expect(typeof f(result, "AgeSeconds")).toBe("number");
-    expect(f(result, "AgeSeconds")).toBeGreaterThan(600000000);
+    expect(f(result, "AgeSeconds")).toBeGreaterThan(600_000_000);
   });
 
   it("date subtraction .milliseconds returns total ms", () => {
@@ -102,11 +102,11 @@ describe("duration fields on date subtraction", () => {
         "      - file.name",
         "      - formula.AgeMs",
       ].join("\n"),
-      [file("A.md", "A", [{ name: "birthday", value: "2000-06-15" }])],
+      [file("A.md", "A", [{ name: "birthday", value: "2000-06-15" }])]
     );
 
     expect(typeof f(result, "AgeMs")).toBe("number");
-    expect(f(result, "AgeMs")).toBeGreaterThan(600000000000);
+    expect(f(result, "AgeMs")).toBeGreaterThan(600_000_000_000);
   });
 
   it("null birthday produces null duration", () => {
@@ -121,7 +121,7 @@ describe("duration fields on date subtraction", () => {
         "      - file.name",
         "      - formula.AgeDays",
       ].join("\n"),
-      [file("Empty.md", "Empty", [{ name: "birthday", value: null }])],
+      [file("Empty.md", "Empty", [{ name: "birthday", value: null }])]
     );
 
     expect(f(result, "AgeDays")).toBeNull();
@@ -141,7 +141,7 @@ describe("duration() parsing", () => {
         "      - file.name",
         "      - formula.D",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
 
     expect(f(result, "D")).toBe(7);
@@ -159,7 +159,7 @@ describe("duration() parsing", () => {
         "      - file.name",
         "      - formula.W",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
 
     expect(f(result, "W")).toBe(7);
@@ -177,7 +177,7 @@ describe("duration() parsing", () => {
         "      - file.name",
         "      - formula.M",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
 
     expect(f(result, "M")).toBe(31);
@@ -195,7 +195,7 @@ describe("duration() parsing", () => {
         "      - file.name",
         "      - formula.Y",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
 
     expect(f(result, "Y")).toBe(365);
@@ -213,7 +213,7 @@ describe("duration() parsing", () => {
         "      - file.name",
         "      - formula.H",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
 
     expect(f(result, "H")).toBeCloseTo(1 / 24, 10);
@@ -231,10 +231,10 @@ describe("duration() parsing", () => {
         "      - file.name",
         "      - formula.S",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
 
-    expect(f(result, "S")).toBeCloseTo(1 / 86400, 10);
+    expect(f(result, "S")).toBeCloseTo(1 / 86_400, 10);
   });
 });
 
@@ -251,7 +251,7 @@ describe("duration() named unit forms", () => {
         "      - file.name",
         "      - formula.D",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     expect(f(result, "D")).toBe(1);
   });
@@ -268,7 +268,7 @@ describe("duration() named unit forms", () => {
         "      - file.name",
         "      - formula.D",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     expect(f(result, "D")).toBe(2);
   });
@@ -285,7 +285,7 @@ describe("duration() named unit forms", () => {
         "      - file.name",
         "      - formula.W",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     expect(f(result, "W")).toBe(7);
   });
@@ -302,7 +302,7 @@ describe("duration() named unit forms", () => {
         "      - file.name",
         "      - formula.H",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     expect(f(result, "H")).toBe(1);
   });
@@ -319,7 +319,7 @@ describe("duration() named unit forms", () => {
         "      - file.name",
         "      - formula.M",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     expect(f(result, "M")).toBe(5);
   });
@@ -336,7 +336,7 @@ describe("duration() named unit forms", () => {
         "      - file.name",
         "      - formula.S",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     expect(f(result, "S")).toBeCloseTo(30, 10);
   });
@@ -353,7 +353,7 @@ describe("duration() named unit forms", () => {
         "      - file.name",
         "      - formula.Mo",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     expect(f(result, "Mo")).toBe(31);
   });
@@ -370,7 +370,7 @@ describe("duration() named unit forms", () => {
         "      - file.name",
         "      - formula.Y",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     expect(f(result, "Y")).toBe(365);
   });
@@ -389,7 +389,7 @@ describe("duration * scalar", () => {
         "      - file.name",
         "      - formula.D",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
 
     expect(f(result, "D")).toBe(10);

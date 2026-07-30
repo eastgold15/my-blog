@@ -31,7 +31,7 @@ describe("Base syntax parsing", () => {
         "      - property: note.title",
         "        direction: DESC",
         "    limit: 10",
-      ].join("\n"),
+      ].join("\n")
     );
 
     expect(base.path).toBe("bases/Sources.base");
@@ -39,14 +39,20 @@ describe("Base syntax parsing", () => {
     expect(base.properties["note.title"]?.displayName).toBe("Title");
     expect(base.formulas.year).toBe("date(file.name).year");
     expect(base.views[0]?.sort).toEqual([
-      { property: "note.title", direction: "DESC" },
+      { direction: "DESC", property: "note.title" },
     ]);
     expect(validateBase(base)).toEqual([]);
   });
 
   it("parses formula expressions without runtime dependencies", () => {
     expect(parseExpression("file.tags.contains(this.file)")).toEqual({
-      kind: "call",
+      args: [
+        {
+          kind: "member",
+          object: { kind: "identifier", name: "this" },
+          property: "file",
+        },
+      ],
       callee: {
         kind: "member",
         object: {
@@ -56,13 +62,7 @@ describe("Base syntax parsing", () => {
         },
         property: "contains",
       },
-      args: [
-        {
-          kind: "member",
-          object: { kind: "identifier", name: "this" },
-          property: "file",
-        },
-      ],
+      kind: "call",
     });
   });
 
@@ -82,7 +82,7 @@ describe("Base syntax parsing", () => {
         "    name: NoReference",
         "    order:",
         "      - file.name",
-      ].join("\n"),
+      ].join("\n")
     );
 
     // Engine eagerly evaluates all formulas for every view,
@@ -131,22 +131,22 @@ describe("`this` reference detection", () => {
 
     it("detects this in an array of filters (implicit AND)", () => {
       expect(
-        filterUsesThis(['file.inFolder("raw")', "this.file == true"]),
+        filterUsesThis(['file.inFolder("raw")', "this.file == true"])
       ).toBe(true);
       expect(
         filterUsesThis([
           'file.inFolder("raw")',
           'categories.contains(link("Books"))',
-        ]),
+        ])
       ).toBe(false);
     });
 
     it("detects this in and/or/not filter structures", () => {
       expect(
-        filterUsesThis({ and: ['file.inFolder("raw")', "this.file == true"] }),
+        filterUsesThis({ and: ['file.inFolder("raw")', "this.file == true"] })
       ).toBe(true);
       expect(
-        filterUsesThis({ or: ['file.inFolder("raw")', "this.file == true"] }),
+        filterUsesThis({ or: ['file.inFolder("raw")', "this.file == true"] })
       ).toBe(true);
       expect(filterUsesThis({ not: ["this.file == true"] })).toBe(true);
       expect(filterUsesThis({ and: ['file.inFolder("raw")'] })).toBe(false);
@@ -156,16 +156,16 @@ describe("`this` reference detection", () => {
   describe("formulasUsingThis", () => {
     it("identifies formulas that reference this", () => {
       const formulas = {
-        links_to_this: "wiki.contains(this.file)",
         cost_per_use: "cost / uses",
         has_last: "!note.last.isEmpty()",
+        links_to_this: "wiki.contains(this.file)",
       };
       expect(formulasUsingThis(formulas)).toEqual(new Set(["links_to_this"]));
     });
 
     it("returns empty set when no formulas use this", () => {
       expect(formulasUsingThis({ cost_per_use: "cost / uses" })).toEqual(
-        new Set(),
+        new Set()
       );
     });
   });
@@ -177,11 +177,11 @@ describe("`this` reference detection", () => {
         formulas: {},
       };
       const view = {
-        name: "Test",
-        type: "table",
         filters: "list(genre).contains(this.file)",
-        requiresContext: false,
+        name: "Test",
         raw: {},
+        requiresContext: false,
+        type: "table",
       };
       expect(viewRequiresContext(view, base)).toBe(true);
     });
@@ -193,9 +193,9 @@ describe("`this` reference detection", () => {
       };
       const view = {
         name: "Test",
-        type: "table",
-        requiresContext: false,
         raw: {},
+        requiresContext: false,
+        type: "table",
       };
       expect(viewRequiresContext(view, base)).toBe(true);
     });
@@ -209,10 +209,10 @@ describe("`this` reference detection", () => {
       // because the engine eagerly evaluates all formulas for every row.
       const view = {
         name: "Test",
-        type: "table",
         order: ["file.name"],
-        requiresContext: false,
         raw: {},
+        requiresContext: false,
+        type: "table",
       };
       expect(viewRequiresContext(view, base)).toBe(true);
     });
@@ -224,10 +224,10 @@ describe("`this` reference detection", () => {
       };
       const view = {
         name: "Test",
-        type: "table",
         order: ["file.name", "formula.cost_per_use"],
-        requiresContext: false,
         raw: {},
+        requiresContext: false,
+        type: "table",
       };
       expect(viewRequiresContext(view, base)).toBe(false);
     });
@@ -250,7 +250,7 @@ describe("`this` reference detection", () => {
           "    name: NoReference",
           "    order:",
           "      - file.name",
-        ].join("\n"),
+        ].join("\n")
       );
 
       const resolved = resolveContextRequirements(raw);
@@ -273,7 +273,7 @@ describe("`this` reference detection", () => {
           "    name: View1",
           "  - type: table",
           "    name: View2",
-        ].join("\n"),
+        ].join("\n")
       );
 
       const resolved = resolveContextRequirements(raw);
@@ -290,7 +290,7 @@ describe("`this` reference detection", () => {
           "    name: Simple",
           "    order:",
           "      - file.name",
-        ].join("\n"),
+        ].join("\n")
       );
 
       const resolved = resolveContextRequirements(raw);

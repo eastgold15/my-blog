@@ -22,13 +22,13 @@ export function extractFrontmatter(content: string): BlogFrontmatter {
   }
 
   return {
-    title: data.title as string | undefined,
-    date: data.date as string | undefined,
-    category: data.category as string | undefined,
-    tags: Array.isArray(data.tags) ? (data.tags as string[]) : [],
     author: data.author as string | undefined,
-    draft: data.draft === true,
+    category: data.category as string | undefined,
+    date: data.date as string | undefined,
     description: data.description as string | undefined,
+    draft: data.draft === true,
+    tags: Array.isArray(data.tags) ? (data.tags as string[]) : [],
+    title: data.title as string | undefined,
   };
 }
 
@@ -111,14 +111,14 @@ export function parseBlogPost(
   const category = frontmatter.category || vaultDir || "其他";
 
   return {
-    title: frontmatter.title || filename.replace(mdReg, ""),
-    content: cleanContent,
-    excerpt: frontmatter.description || generateExcerpt(content),
-    date: frontmatter.date || new Date().toISOString(),
-    category,
-    tags: frontmatter.tags || [],
     author: frontmatter.author,
-    readingTime: calculateReadingTime(content),
+    category,
+    content: cleanContent,
+    date: frontmatter.date || new Date().toISOString(),
     draft: frontmatter.draft,
+    excerpt: frontmatter.description || generateExcerpt(content),
+    readingTime: calculateReadingTime(content),
+    tags: frontmatter.tags || [],
+    title: frontmatter.title || filename.replace(mdReg, ""),
   };
 }

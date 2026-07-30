@@ -13,7 +13,7 @@ export class BaseEngineError extends Error {
   constructor(
     readonly code: string,
     message: string,
-    readonly details: Record<string, unknown> = {},
+    readonly details: Record<string, unknown> = {}
   ) {
     super(message);
     this.name = "BaseEngineError";
@@ -50,7 +50,7 @@ type DurationValue = {
 
 export function evaluateExpression(
   expr: Expr,
-  context: EvaluationContext,
+  context: EvaluationContext
 ): unknown {
   switch (expr.kind) {
     case "literal":
@@ -59,7 +59,7 @@ export function evaluateExpression(
       return new RegExp(expr.pattern, expr.flags);
     case "array":
       return expr.elements.map((element) =>
-        evaluateExpression(element, context),
+        evaluateExpression(element, context)
       );
     case "identifier":
       return readIdentifier(expr.name, context);
@@ -67,39 +67,39 @@ export function evaluateExpression(
       return readMember(
         evaluateExpression(expr.object, context),
         expr.property,
-        context,
+        context
       );
     case "index":
       return readIndex(
         evaluateExpression(expr.object, context),
-        evaluateExpression(expr.index, context),
+        evaluateExpression(expr.index, context)
       );
     case "call":
       if (expr.callee.kind === "member" && expr.callee.property === "filter") {
         const source = listValue(
-          evaluateExpression(expr.callee.object, context),
+          evaluateExpression(expr.callee.object, context)
         );
         const predicate = expr.args[0];
         return predicate
           ? source.filter((value) =>
-              truthy(evaluateExpression(predicate, { ...context, value })),
+              truthy(evaluateExpression(predicate, { ...context, value }))
             )
           : source;
       }
       if (expr.callee.kind === "member" && expr.callee.property === "map") {
         const source = listValue(
-          evaluateExpression(expr.callee.object, context),
+          evaluateExpression(expr.callee.object, context)
         );
         const mapper = expr.args[0];
         return mapper
           ? source.map((value) =>
-              evaluateExpression(mapper, { ...context, value }),
+              evaluateExpression(mapper, { ...context, value })
             )
           : source;
       }
       if (expr.callee.kind === "member" && expr.callee.property === "reduce") {
         const source = listValue(
-          evaluateExpression(expr.callee.object, context),
+          evaluateExpression(expr.callee.object, context)
         );
         const reducer = expr.args[0];
         if (!reducer) return null;
@@ -118,7 +118,7 @@ export function evaluateExpression(
         if (typeof target === "string") {
           throw new BaseEngineError(
             "FORMULA_EVAL_ERROR",
-            'Cannot find function "matches" on type String',
+            'Cannot find function "matches" on type String'
           );
         }
       }
@@ -126,12 +126,12 @@ export function evaluateExpression(
         return callValue(
           readFunctionIdentifier(expr.callee.name, context) ??
             evaluateExpression(expr.callee, context),
-          expr.args.map((arg) => evaluateExpression(arg, context)),
+          expr.args.map((arg) => evaluateExpression(arg, context))
         );
       }
       return callValue(
         evaluateExpression(expr.callee, context),
-        expr.args.map((arg) => evaluateExpression(arg, context)),
+        expr.args.map((arg) => evaluateExpression(arg, context))
       );
     case "unary": {
       const value = evaluateExpression(expr.right, context);
@@ -141,7 +141,7 @@ export function evaluateExpression(
       return evaluateBinary(
         expr.operator,
         evaluateExpression(expr.left, context),
-        evaluateExpression(expr.right, context),
+        evaluateExpression(expr.right, context)
       );
   }
 }
@@ -194,14 +194,14 @@ function readIdentifier(name: string, context: EvaluationContext): unknown {
 
 function readFunctionIdentifier(
   name: string,
-  context: EvaluationContext,
+  context: EvaluationContext
 ): Callable | null {
   if (name === "list") {
     return callable((args) => {
       if (args.length > 1) {
         throw new BaseEngineError(
           "FORMULA_EVAL_ERROR",
-          'Cannot call function "list", too many arguments.',
+          'Cannot call function "list", too many arguments.'
         );
       }
       return args.flatMap((arg) => listValue(arg));
@@ -266,7 +266,7 @@ function readFunctionIdentifier(
       ) {
         throw new BaseEngineError(
           "FORMULA_EVAL_ERROR",
-          `Unable to parse "${val}" as a number.`,
+          `Unable to parse "${val}" as a number.`
         );
       }
       return result;
@@ -321,7 +321,7 @@ function readFunctionIdentifier(
 function readMember(
   value: unknown,
   property: string,
-  context: EvaluationContext,
+  context: EvaluationContext
 ): unknown {
   // --- null-safe default returns ---
   if (value === null || value === undefined) {
@@ -376,10 +376,8 @@ function readMember(
     return value[property as keyof DurationValue];
   }
 
-  if (value instanceof RegExp) {
-    if (property === "matches") {
-      return callable((args) => value.test(String(args[0] ?? "")));
-    }
+  if (value instanceof RegExp && property === "matches") {
+    return callable((args) => value.test(String(args[0] ?? "")));
   }
 
   // --- Array methods ---
@@ -389,7 +387,7 @@ function readMember(
     }
     if (property === "contains") {
       return callable((args) =>
-        value.some((item) => sameComparable(item, args[0])),
+        value.some((item) => sameComparable(item, args[0]))
       );
     }
     if (property === "containsAny") {
@@ -397,8 +395,8 @@ function readMember(
         value.some((item) =>
           args
             .flatMap((arg) => listValue(arg))
-            .some((arg) => sameComparable(item, arg)),
-        ),
+            .some((arg) => sameComparable(item, arg))
+        )
       );
     }
     if (property === "isEmpty") {
@@ -437,7 +435,7 @@ function readMember(
       return callable((args) => {
         const required = args.flatMap((arg) => listValue(arg));
         return required.every((item) =>
-          value.some((v) => sameComparable(v, item)),
+          value.some((v) => sameComparable(v, item))
         );
       });
     }
@@ -465,7 +463,7 @@ function readMember(
     if (property === "slice") {
       return callable((args) => {
         const start = numberValue(args[0]);
-        const end = args[1] !== undefined ? numberValue(args[1]) : undefined;
+        const end = args[1] === undefined ? undefined : numberValue(args[1]);
         return value.slice(start, end);
       });
     }
@@ -478,7 +476,7 @@ function readMember(
     }
     if (property === "contains") {
       return callable((args) =>
-        normalizeComparable(value).includes(normalizeComparable(args[0])),
+        normalizeComparable(value).includes(normalizeComparable(args[0]))
       );
     }
     if (property === "containsAny") {
@@ -486,8 +484,8 @@ function readMember(
         args
           .flatMap((arg) => listValue(arg))
           .some((arg) =>
-            normalizeComparable(value).includes(normalizeComparable(arg)),
-          ),
+            normalizeComparable(value).includes(normalizeComparable(arg))
+          )
       );
     }
     if (property === "isEmpty") {
@@ -509,8 +507,8 @@ function readMember(
               isRecord(source) && isRecord(source.file)
                 ? source.file.path
                 : source.path,
-              target,
-            ),
+              target
+            )
         );
       });
     }
@@ -519,7 +517,7 @@ function readMember(
     }
     if (property === "title") {
       return callable(() =>
-        value.replace(/\b\w/gu, (char) => char.toUpperCase()),
+        value.replace(/\b\w/gu, (char) => char.toUpperCase())
       );
     }
     if (property === "trim") {
@@ -548,7 +546,7 @@ function readMember(
     if (property === "slice") {
       return callable((args) => {
         const start = numberValue(args[0]);
-        const end = args[1] !== undefined ? numberValue(args[1]) : undefined;
+        const end = args[1] === undefined ? undefined : numberValue(args[1]);
         return value.slice(start, end);
       });
     }
@@ -564,7 +562,7 @@ function readMember(
       const d = dateValue(value);
       if (d)
         return callable(
-          () => new Date(d.getFullYear(), d.getMonth(), d.getDate()),
+          () => new Date(d.getFullYear(), d.getMonth(), d.getDate())
         );
     }
     if (property === "time") {
@@ -640,7 +638,7 @@ function readMember(
     }
     if (property === "date") {
       return callable(
-        () => new Date(value.getFullYear(), value.getMonth(), value.getDate()),
+        () => new Date(value.getFullYear(), value.getMonth(), value.getDate())
       );
     }
     if (property === "time") {
@@ -756,14 +754,14 @@ function callValue(callee: unknown, args: unknown[]): unknown {
 
   throw new BaseEngineError(
     "FORMULA_EVAL_ERROR",
-    "Expression value is not callable",
+    "Expression value is not callable"
   );
 }
 
 function evaluateBinary(
   operator: string,
   left: unknown,
-  right: unknown,
+  right: unknown
 ): unknown {
   switch (operator) {
     case "&&":
@@ -796,7 +794,7 @@ function evaluateBinary(
       throw new BaseEngineError(
         "UNSUPPORTED_FORMULA",
         `Unsupported operator: ${operator}`,
-        { operator },
+        { operator }
       );
   }
 }
@@ -858,80 +856,80 @@ function multiplyValues(left: unknown, right: unknown): unknown {
 
 function fileObject(
   inspection: BaseFileInspection,
-  _context: EvaluationContext,
+  _context: EvaluationContext
 ): Record<string, unknown> {
   const file = fileReference(inspection);
 
   return {
     ...file,
-    file,
-    tags: inspection.tags.map((tag) => `#${tag.tag.replace(/^#/, "")}`),
-    links: inspection.links.flatMap((link) => link.resolvedPath ?? []),
+    asLink: callable(() => `[[${inspection.file.path}]]`),
     backlinks: inspection.backlinks,
     embeds: inspection.embeds.map(
-      (link) => link.resolvedPath ?? link.targetText,
+      (link) => link.resolvedPath ?? link.targetText
     ),
-    properties: noteObject(inspection),
-    asLink: callable(() => `[[${inspection.file.path}]]`),
-    inFolder: callable(
-      (args) =>
-        inspection.file.folder === String(args[0] ?? "") ||
-        inspection.file.folder.startsWith(`${String(args[0] ?? "")}/`),
-    ),
-    hasTag: callable((args) =>
-      inspection.tags.some((tag) =>
-        args.some((arg) => tagMatches(tag.tag, arg)),
-      ),
-    ),
+    file,
     hasLink: callable((args) => {
       const target = linkTarget(args[0]);
       return inspection.links.some((link) =>
-        sameComparable(link.resolvedPath ?? link.targetText, target),
+        sameComparable(link.resolvedPath ?? link.targetText, target)
       );
     }),
     hasProperty: callable((args) =>
       inspection.properties.some((property) =>
-        sameComparable(property.name, args[0]),
-      ),
+        sameComparable(property.name, args[0])
+      )
     ),
+    hasTag: callable((args) =>
+      inspection.tags.some((tag) =>
+        args.some((arg) => tagMatches(tag.tag, arg))
+      )
+    ),
+    inFolder: callable(
+      (args) =>
+        inspection.file.folder === String(args[0] ?? "") ||
+        inspection.file.folder.startsWith(`${String(args[0] ?? "")}/`)
+    ),
+    links: inspection.links.flatMap((link) => link.resolvedPath ?? []),
+    properties: noteObject(inspection),
+    tags: inspection.tags.map((tag) => `#${tag.tag.replace(/^#/, "")}`),
   };
 }
 
 function thisObject(
   inspection: BaseFileInspection,
-  context: EvaluationContext,
+  context: EvaluationContext
 ): Record<string, unknown> {
   return {
-    file: fileObject(inspection, context),
     asLink: callable(() => `[[${inspection.file.path}]]`),
+    file: fileObject(inspection, context),
     ...noteObject(inspection),
   };
 }
 
 function fileReference(
-  inspection: BaseFileInspection,
+  inspection: BaseFileInspection
 ): Record<string, string | number | undefined> {
   return {
-    name: inspection.file.basename,
     basename: inspection.file.basename,
-    path: inspection.file.path,
-    folder: inspection.file.folder,
-    ext: inspection.file.ext,
-    size: inspection.file.size,
     ctime: dateTimeString(inspection.file.ctime),
+    ext: inspection.file.ext,
+    folder: inspection.file.folder,
     mtime: dateTimeString(inspection.file.mtime),
+    name: inspection.file.basename,
+    path: inspection.file.path,
+    size: inspection.file.size,
   };
 }
 
 function noteObject(inspection: BaseFileInspection): Record<string, unknown> {
   return Object.fromEntries(
-    inspection.properties.map((property) => [property.name, property.value]),
+    inspection.properties.map((property) => [property.name, property.value])
   );
 }
 
 function readProperty(inspection: BaseFileInspection, name: string): unknown {
   const property = inspection.properties.find(
-    (candidate) => normalizeName(candidate.name) === normalizeName(name),
+    (candidate) => normalizeName(candidate.name) === normalizeName(name)
   );
   if (!property) return null;
   if (property.name === "tags" && Array.isArray(property.value)) {
@@ -958,7 +956,7 @@ function linkTarget(value: unknown): unknown {
 
 function lookupFile(
   value: unknown,
-  context: EvaluationContext,
+  context: EvaluationContext
 ): Record<string, unknown> | null {
   const target = normalizeComparable(value);
   const inspection =
@@ -1050,12 +1048,12 @@ function dateValue(value: unknown): Date | null {
     return new Date(
       Number(dateOnly[1]),
       Number(dateOnly[2]) - 1,
-      Number(dateOnly[3]),
+      Number(dateOnly[3])
     );
   }
 
   const dateTime = trimmed.match(
-    /^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,3}))?)?)$/u,
+    /^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,3}))?)?)$/u
   );
   if (dateTime) {
     return new Date(
@@ -1065,7 +1063,7 @@ function dateValue(value: unknown): Date | null {
       Number(dateTime[4] ?? 0),
       Number(dateTime[5] ?? 0),
       Number(dateTime[6] ?? 0),
-      Number((dateTime[7] ?? "0").padEnd(3, "0")),
+      Number((dateTime[7] ?? "0").padEnd(3, "0"))
     );
   }
 
@@ -1084,27 +1082,27 @@ const DURATION_UNITS: Array<{
   toDays: number;
   field: "days" | "hours" | "minutes" | "seconds" | "months" | "years";
 }> = [
-  { pattern: "d", toDays: 1, field: "days" },
-  { pattern: "w", toDays: 7, field: "days" },
-  { pattern: "M", toDays: 31, field: "months" },
-  { pattern: "y", toDays: 365, field: "years" },
-  { pattern: "h", toDays: 1 / 24, field: "hours" },
-  { pattern: "m", toDays: 1 / 1440, field: "minutes" },
-  { pattern: "s", toDays: 1 / 86400, field: "seconds" },
-  { pattern: "day", toDays: 1, field: "days" },
-  { pattern: "days", toDays: 1, field: "days" },
-  { pattern: "week", toDays: 7, field: "days" },
-  { pattern: "weeks", toDays: 7, field: "days" },
-  { pattern: "month", toDays: 31, field: "months" },
-  { pattern: "months", toDays: 31, field: "months" },
-  { pattern: "year", toDays: 365, field: "years" },
-  { pattern: "years", toDays: 365, field: "years" },
-  { pattern: "hour", toDays: 1 / 24, field: "hours" },
-  { pattern: "hours", toDays: 1 / 24, field: "hours" },
-  { pattern: "minute", toDays: 1 / 1440, field: "minutes" },
-  { pattern: "minutes", toDays: 1 / 1440, field: "minutes" },
-  { pattern: "second", toDays: 1 / 86400, field: "seconds" },
-  { pattern: "seconds", toDays: 1 / 86400, field: "seconds" },
+  { field: "days", pattern: "d", toDays: 1 },
+  { field: "days", pattern: "w", toDays: 7 },
+  { field: "months", pattern: "M", toDays: 31 },
+  { field: "years", pattern: "y", toDays: 365 },
+  { field: "hours", pattern: "h", toDays: 1 / 24 },
+  { field: "minutes", pattern: "m", toDays: 1 / 1440 },
+  { field: "seconds", pattern: "s", toDays: 1 / 86_400 },
+  { field: "days", pattern: "day", toDays: 1 },
+  { field: "days", pattern: "days", toDays: 1 },
+  { field: "days", pattern: "week", toDays: 7 },
+  { field: "days", pattern: "weeks", toDays: 7 },
+  { field: "months", pattern: "month", toDays: 31 },
+  { field: "months", pattern: "months", toDays: 31 },
+  { field: "years", pattern: "year", toDays: 365 },
+  { field: "years", pattern: "years", toDays: 365 },
+  { field: "hours", pattern: "hour", toDays: 1 / 24 },
+  { field: "hours", pattern: "hours", toDays: 1 / 24 },
+  { field: "minutes", pattern: "minute", toDays: 1 / 1440 },
+  { field: "minutes", pattern: "minutes", toDays: 1 / 1440 },
+  { field: "seconds", pattern: "second", toDays: 1 / 86_400 },
+  { field: "seconds", pattern: "seconds", toDays: 1 / 86_400 },
 ];
 
 function parseDuration(value: string): DurationValue | null {
@@ -1119,7 +1117,7 @@ function parseDuration(value: string): DurationValue | null {
         amount * unitDef.toDays * 86_400_000,
         unitDef.field === "years" ? amount : 0,
         unitDef.field === "months" ? amount : 0,
-        unitDef.field === "days" ? amount * unitDef.toDays : 0,
+        unitDef.field === "days" ? amount * unitDef.toDays : 0
       );
     }
   }
@@ -1135,7 +1133,7 @@ function parseDuration(value: string): DurationValue | null {
         amount * unitDef.toDays * 86_400_000,
         unitDef.field === "years" ? amount : 0,
         unitDef.field === "months" ? amount : 0,
-        unitDef.field === "days" ? amount * unitDef.toDays : 0,
+        unitDef.field === "days" ? amount * unitDef.toDays : 0
       );
     }
   }
@@ -1147,21 +1145,21 @@ function durationValue(
   milliseconds: number,
   calendarYears = 0,
   calendarMonths = 0,
-  calendarDays = 0,
+  calendarDays = 0
 ): DurationValue {
   return {
-    milliseconds,
+    calendarDays,
+    calendarMonths,
+    calendarYears,
     days: nearInteger(milliseconds / 86_400_000),
     hours: nearInteger(milliseconds / 3_600_000),
+    milliseconds,
     minutes: nearInteger(milliseconds / 60_000),
-    seconds: nearInteger(milliseconds / 1_000),
     months: nearInteger(
-      milliseconds / ((365.28478589915085 * 86_400_000) / 12),
+      milliseconds / ((365.284_785_899_150_85 * 86_400_000) / 12)
     ),
-    years: nearInteger(milliseconds / (365.28478589915085 * 86_400_000)),
-    calendarYears,
-    calendarMonths,
-    calendarDays,
+    seconds: nearInteger(milliseconds / 1000),
+    years: nearInteger(milliseconds / (365.284_785_899_150_85 * 86_400_000)),
   };
 }
 
@@ -1173,7 +1171,7 @@ function nearInteger(value: number): number {
 function addDurationToDate(
   date: Date,
   duration: DurationValue,
-  direction: 1 | -1,
+  direction: 1 | -1
 ): Date {
   const next = new Date(date.valueOf());
   const calendarYears = duration.calendarYears ?? 0;
@@ -1205,7 +1203,7 @@ function addDurationToDate(
 
 function dateTimeString(value: string | undefined): string | undefined {
   if (!value) {
-    return undefined;
+    return;
   }
 
   const date = new Date(value);
@@ -1219,7 +1217,7 @@ function dateTimeString(value: string | undefined): string | undefined {
 function formatDateTimeForOutput(date: Date): string {
   const pad = (part: number) => String(part).padStart(2, "0");
   const datePart = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(
-    date.getDate(),
+    date.getDate()
   )}`;
   if (
     date.getHours() === 0 &&
@@ -1230,7 +1228,7 @@ function formatDateTimeForOutput(date: Date): string {
     return datePart;
   }
   return `${datePart}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(
-    date.getSeconds(),
+    date.getSeconds()
   )}`;
 }
 
@@ -1240,7 +1238,7 @@ function relativeTime(date: Date): string {
   const absDiff = Math.abs(diff);
   const isPast = diff > 0;
 
-  const seconds = Math.floor(absDiff / 1_000);
+  const seconds = Math.floor(absDiff / 1000);
   const minutes = Math.floor(absDiff / 60_000);
   const hours = Math.floor(absDiff / 3_600_000);
   const days = Math.floor(absDiff / 86_400_000);

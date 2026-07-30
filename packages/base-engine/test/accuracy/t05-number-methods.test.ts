@@ -23,7 +23,7 @@ describe("number.round(digits)", () => {
         "      - file.name",
         "      - formula.R",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     expect(f(result, "R")).toBe(3);
   });
@@ -40,7 +40,7 @@ describe("number.round(digits)", () => {
         "      - file.name",
         "      - formula.R",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     expect(f(result, "R")).toBeCloseTo(2.33, 2);
   });
@@ -57,7 +57,7 @@ describe("number.round(digits)", () => {
         "      - file.name",
         "      - formula.R",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     expect(f(result, "R")).toBeCloseTo(Math.PI, 4);
   });
@@ -74,7 +74,7 @@ describe("number.round(digits)", () => {
         "      - file.name",
         "      - formula.F",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     expect(f(result, "F")).toBe(2);
   });
@@ -91,7 +91,7 @@ describe("number.round(digits)", () => {
         "      - file.name",
         "      - formula.C",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     expect(f(result, "C")).toBe(3);
   });
@@ -108,7 +108,7 @@ describe("number.round(digits)", () => {
         "      - file.name",
         "      - formula.A",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     expect(f(result, "A")).toBe(5);
   });
@@ -125,7 +125,7 @@ describe("number.round(digits)", () => {
         "      - file.name",
         "      - formula.T",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     expect(f(result, "T")).toBe("3.14");
   });

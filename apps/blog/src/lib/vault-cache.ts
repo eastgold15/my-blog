@@ -64,7 +64,7 @@ export function syncVault(): void {
 
   function releaseLock(): void {
     try {
-      rmSync(lockPath, { recursive: true, force: true });
+      rmSync(lockPath, { force: true, recursive: true });
     } catch {
       // ignore
     }
@@ -116,11 +116,11 @@ export function syncVault(): void {
     console.log(`[vault-cache] 首次同步: git clone ${config.vault.repo}`);
 
     if (existsSync(tempCachePath)) {
-      rmSync(tempCachePath, { recursive: true, force: true });
+      rmSync(tempCachePath, { force: true, recursive: true });
     }
 
     if (existsSync(cachePath)) {
-      rmSync(cachePath, { recursive: true, force: true });
+      rmSync(cachePath, { force: true, recursive: true });
     }
 
     execSync(
@@ -129,14 +129,14 @@ export function syncVault(): void {
     );
 
     if (existsSync(cachePath)) {
-      rmSync(cachePath, { recursive: true, force: true });
+      rmSync(cachePath, { force: true, recursive: true });
     }
     renameSync(tempCachePath, cachePath);
     console.log("[vault-cache] ✅ 同步完成");
   } finally {
     releaseLock();
     if (existsSync(tempCachePath)) {
-      rmSync(tempCachePath, { recursive: true, force: true });
+      rmSync(tempCachePath, { force: true, recursive: true });
     }
   }
 }
@@ -185,7 +185,7 @@ export function getAllMarkdownFiles(): VaultFile[] {
     for (const item of items) {
       if (shouldExclude(item)) continue;
       if (!(item.endsWith(".md") || item.endsWith(".mdx"))) continue;
-      files.push({ path: join(blogDir, item), name: item, type: "blog" });
+      files.push({ name: item, path: join(blogDir, item), type: "blog" });
     }
   }
 
@@ -203,10 +203,10 @@ export function getAllMarkdownFiles(): VaultFile[] {
         if (shouldExclude(subItem)) continue;
         if (!(subItem.endsWith(".md") || subItem.endsWith(".mdx"))) continue;
         files.push({
-          path: `${articleDir}/${topItem}/${subItem}`,
-          name: subItem,
-          type: "article",
           chapterDir: chapterName,
+          name: subItem,
+          path: `${articleDir}/${topItem}/${subItem}`,
+          type: "article",
         });
       }
     }
@@ -223,10 +223,10 @@ export function buildNavTree(): NavItem[] {
   // blog tab
   for (const dir of config.content.dirs.blog) {
     items.push({
-      label: dir.replace(NUM_PREFIX_REGEX, ""),
-      slug: "/",
-      path: dir,
       isBlog: true,
+      label: dir.replace(NUM_PREFIX_REGEX, ""),
+      path: dir,
+      slug: "/",
     });
   }
 
@@ -234,17 +234,17 @@ export function buildNavTree(): NavItem[] {
   for (const dir of config.content.dirs.article) {
     items.push({
       label: dir.replace(NUM_PREFIX_REGEX, ""),
-      slug: `/${encodeURIComponent(dir)}`,
       path: dir,
+      slug: `/${encodeURIComponent(dir)}`,
     });
   }
 
   // extra tabs
   for (const tab of config.content.extraTabs) {
     items.push({
+      isExternal: true,
       label: tab.label,
       slug: tab.href,
-      isExternal: true,
     });
   }
 
@@ -280,10 +280,10 @@ export function buildFileTree(dirPath: string): TreeNode[] {
     try {
       if (statSync(fullEntryPath).isDirectory()) {
         tree.push({
+          children: buildFileTree(entryPath),
           name: entry.replace(NUM_PREFIX_REGEX, ""),
           path: entryPath,
           type: "dir",
-          children: buildFileTree(entryPath),
         });
       } else if (entry.endsWith(".md") || entry.endsWith(".mdx")) {
         tree.push({

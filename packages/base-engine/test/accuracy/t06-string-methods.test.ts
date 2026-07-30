@@ -25,7 +25,7 @@ describe("string methods", () => {
         "      - file.name",
         "      - formula.L",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     expect(f(result, "L")).toBe("hello world");
   });
@@ -42,7 +42,7 @@ describe("string methods", () => {
         "      - file.name",
         "      - formula.T",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     expect(f(result, "T")).toBe("Hello World");
   });
@@ -59,7 +59,7 @@ describe("string methods", () => {
         "      - file.name",
         "      - formula.T",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     expect(f(result, "T")).toBe("hi");
   });
@@ -76,7 +76,7 @@ describe("string methods", () => {
         "      - file.name",
         "      - formula.S",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     expect(f(result, "S")).toBe(true);
   });
@@ -93,7 +93,7 @@ describe("string methods", () => {
         "      - file.name",
         "      - formula.E",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     expect(f(result, "E")).toBe(true);
   });
@@ -110,7 +110,7 @@ describe("string methods", () => {
         "      - file.name",
         "      - formula.R",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     expect(f(result, "R")).toBe("a-b-c-d");
   });
@@ -127,7 +127,7 @@ describe("string methods", () => {
         "      - file.name",
         "      - formula.R",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     expect(f(result, "R")).toBe("123123");
   });
@@ -144,7 +144,7 @@ describe("string methods", () => {
         "      - file.name",
         "      - formula.R",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     expect(f(result, "R")).toBe("olleh");
   });
@@ -161,7 +161,7 @@ describe("string methods", () => {
         "      - file.name",
         "      - formula.S",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     expect(f(result, "S")).toBe("ell");
   });
@@ -178,7 +178,7 @@ describe("string methods", () => {
         "      - file.name",
         "      - formula.S",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     expect(f(result, "S")).toEqual(["a", "b", "c", "d"]);
   });
@@ -195,7 +195,7 @@ describe("string methods", () => {
         "      - file.name",
         "      - formula.L",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     expect(f(result, "L")).toBe(5);
   });
@@ -214,7 +214,7 @@ describe("string.contains() is case-insensitive", () => {
         "      - file.name",
         "      - formula.C",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     expect(f(result, "C")).toBe(true);
   });
@@ -231,7 +231,7 @@ describe("string.contains() is case-insensitive", () => {
         "      - file.name",
         "      - formula.C",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     expect(f(result, "C")).toBe(true);
   });
@@ -250,7 +250,7 @@ describe("list.contains() is case-insensitive and # prefix-insensitive", () => {
         "      - file.name",
         "      - formula.H",
       ].join("\n"),
-      [taggedFile("A.md", "A", ["#book"], [])],
+      [taggedFile("A.md", "A", ["#book"], [])]
     );
     expect(f(result, "H")).toBe(true);
   });

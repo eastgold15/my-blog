@@ -19,14 +19,14 @@ describe("file.name returns basename without extension", () => {
         "      - file.name",
         "      - file.basename",
       ].join("\n"),
-      standardInspections(),
+      standardInspections()
     );
     const row = result.rows[0] as Record<string, unknown>;
     expect((row?.values as Record<string, unknown>)?.["file.name"]).toBe(
-      "Alpha",
+      "Alpha"
     );
     expect((row?.values as Record<string, unknown>)?.["file.basename"]).toBe(
-      "Alpha",
+      "Alpha"
     );
   });
 });
@@ -46,10 +46,10 @@ describe("view sort", () => {
         "      - file.name",
         "      - priority",
       ].join("\n"),
-      standardInspections(),
+      standardInspections()
     );
     const names = result.rows.map(
-      (r) => (r as Record<string, Record<string, unknown>>)?.file?.basename,
+      (r) => (r as Record<string, Record<string, unknown>>)?.file?.basename
     );
     expect(names).toEqual(["Bravo", "Delta", "Alpha", "Charlie"]);
   });
@@ -71,7 +71,7 @@ describe("note['property'] bracket access", () => {
         "      - formula.B",
         "      - formula.D",
       ].join("\n"),
-      [file("Test.md", "Test", [{ name: "price", value: 9.99 }])],
+      [file("Test.md", "Test", [{ name: "price", value: 9.99 }])]
     );
     expect(f(result, "B")).toBe(9.99);
     expect(f(result, "D")).toBe(9.99);
@@ -92,7 +92,7 @@ describe("&& and || return booleans", () => {
         "      - file.name",
         "      - formula.A",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     expect(f(result, "A")).toBe(true);
   });
@@ -109,7 +109,7 @@ describe("&& and || return booleans", () => {
         "      - file.name",
         "      - formula.O",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     expect(f(result, "O")).toBe(true);
   });
@@ -129,7 +129,7 @@ describe("property prefix returns null (only 'note' works)", () => {
         "      - file.name",
         "      - formula.P",
       ].join("\n"),
-      [file("Test.md", "Test", [{ name: "price", value: 9.99 }])],
+      [file("Test.md", "Test", [{ name: "price", value: 9.99 }])]
     );
     expect(f(result, "P")).toBeNull();
   });
@@ -146,7 +146,7 @@ describe("property prefix returns null (only 'note' works)", () => {
         "      - file.name",
         "      - formula.N",
       ].join("\n"),
-      [file("Test.md", "Test", [{ name: "price", value: 9.99 }])],
+      [file("Test.md", "Test", [{ name: "price", value: 9.99 }])]
     );
     expect(f(result, "N")).toBe(9.99);
   });
@@ -166,7 +166,7 @@ describe("this keyword", () => {
         "      - file.name",
         "      - formula.T",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     expect(f(result, "T")).toBeNull();
   });
@@ -187,12 +187,12 @@ describe("this keyword", () => {
         file("Notes/Alpha.md", "Alpha", []),
         file("Notes/Embedder.md", "Embedder", []),
       ],
-      { context: "Notes/Embedder.md" },
+      { context: "Notes/Embedder.md" }
     );
     const alphaRow = result.rows.find(
       (r) =>
         (r as Record<string, Record<string, unknown>>)?.file?.basename ===
-        "Alpha",
+        "Alpha"
     );
     expect(
       (alphaRow as Record<string, unknown>) &&
@@ -201,7 +201,7 @@ describe("this keyword", () => {
             string,
             unknown
           >
-        )?.T,
+        )?.T
     ).toBe("Embedder");
   });
 });
@@ -222,7 +222,7 @@ describe("bare identifiers prefer properties over globals", () => {
         "      - formula.D",
         "      - formula.F",
       ].join("\n"),
-      [file("Test.md", "Test", [{ name: "date", value: "2025-12-25" }])],
+      [file("Test.md", "Test", [{ name: "date", value: "2025-12-25" }])]
     );
     expect(f(result, "D")).toBe("2025-12-25");
     expect(f(result, "F")).toBeInstanceOf(Date);
@@ -243,7 +243,7 @@ describe("render functions", () => {
         "      - file.name",
         "      - formula.E",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     expect(f(result, "E")).toBe("&lt;b&gt;bold&lt;/b&gt;");
   });
@@ -260,7 +260,7 @@ describe("render functions", () => {
         "      - file.name",
         "      - formula.R",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     const val = f(result, "R") as number;
     expect(typeof val).toBe("number");
@@ -287,11 +287,11 @@ describe("file.inFolder() filters by folder", () => {
         file("Notes/Alpha.md", "Alpha", []),
         file("Notes/Bravo.md", "Bravo", []),
         file("bases/test.base", "test", []),
-      ],
+      ]
     );
     expect(result.rows).toHaveLength(2);
     const names = result.rows.map(
-      (r) => (r as Record<string, Record<string, unknown>>)?.file?.basename,
+      (r) => (r as Record<string, Record<string, unknown>>)?.file?.basename
     );
     expect(names).toContain("Alpha");
     expect(names).toContain("Bravo");

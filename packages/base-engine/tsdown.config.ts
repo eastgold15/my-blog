@@ -1,17 +1,17 @@
 import { defineConfig } from "tsdown";
 
 export default defineConfig({
-  entry: ["src/index.ts"],
-  format: "esm",
+  clean: true,
+  deps: {
+    neverBundle: ["@aliou/obsdx-base-ast"],
+  },
   dts: {
     compilerOptions: {
       composite: false,
     },
   },
+  entry: ["src/index.ts"],
+  format: "esm",
   sourcemap: true,
-  clean: true,
   target: "node25",
-  deps: {
-    neverBundle: ["@aliou/obsdx-base-ast"],
-  },
 });

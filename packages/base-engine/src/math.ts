@@ -1,7 +1,7 @@
 export function numericValues(values: unknown[]): number[] {
   return values.filter(
     (value): value is number =>
-      typeof value === "number" && Number.isFinite(value),
+      typeof value === "number" && Number.isFinite(value)
   );
 }
 
@@ -38,6 +38,6 @@ export function stddevNumbers(values: unknown[]): number | null {
   if (average === null) return null;
   return Math.sqrt(
     numbers.reduce((total, value) => total + (value - average) ** 2, 0) /
-      numbers.length,
+      numbers.length
   );
 }

@@ -71,7 +71,7 @@ class Parser {
 
     if (token.type === "regex") {
       const value = token.value as { pattern: string; flags: string };
-      return { kind: "regex", pattern: value.pattern, flags: value.flags };
+      return { flags: value.flags, kind: "regex", pattern: value.pattern };
     }
 
     if (token.type === "identifier") {
@@ -96,7 +96,7 @@ class Parser {
         } while (this.match("punct", ","));
       }
       this.consume("punct", "]");
-      return { kind: "array", elements };
+      return { elements, kind: "array" };
     }
 
     if (token.type === "punct" && token.lexeme === "(") {
@@ -121,7 +121,7 @@ class Parser {
       if (this.match("punct", "[")) {
         const index = this.parseExpression(0);
         this.consume("punct", "]");
-        current = { kind: "index", object: current, index };
+        current = { index, kind: "index", object: current };
         continue;
       }
 
@@ -133,7 +133,7 @@ class Parser {
           } while (this.match("punct", ","));
         }
         this.consume("punct", ")");
-        current = { kind: "call", callee: current, args };
+        current = { args, callee: current, kind: "call" };
         continue;
       }
 
@@ -152,7 +152,7 @@ class Parser {
   private consume(type: Token["type"], lexeme?: string): Token {
     if (!this.check(type, lexeme)) {
       throw new Error(
-        `Expected ${lexeme ?? type}, got "${this.peek().lexeme}"`,
+        `Expected ${lexeme ?? type}, got "${this.peek().lexeme}"`
       );
     }
 
@@ -173,6 +173,6 @@ class Parser {
   }
 
   private peek(): Token {
-    return this.tokens[this.#current] ?? { type: "eof", lexeme: "" };
+    return this.tokens[this.#current] ?? { lexeme: "", type: "eof" };
   }
 }

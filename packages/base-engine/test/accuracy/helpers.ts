@@ -13,22 +13,22 @@ export function file(
   path: string,
   basename: string,
   properties: BaseFileInspection["properties"],
-  overrides?: Partial<BaseFileInspection>,
+  overrides?: Partial<BaseFileInspection>
 ): BaseFileInspection {
   return {
+    backlinks: [],
+    embeds: [],
     file: {
-      path,
-      name: `${basename}.md`,
       basename,
       ext: ".md",
       folder: path.split("/").slice(0, -1).join("/"),
       kind: "markdown",
+      name: `${basename}.md`,
+      path,
     },
+    links: [],
     properties,
     tags: [],
-    links: [],
-    backlinks: [],
-    embeds: [],
     ...overrides,
   };
 }
@@ -37,7 +37,7 @@ export function taggedFile(
   path: string,
   basename: string,
   tags: string[],
-  properties: BaseFileInspection["properties"],
+  properties: BaseFileInspection["properties"]
 ): BaseFileInspection {
   return {
     ...file(path, basename, properties),
@@ -49,7 +49,7 @@ export function linkedFile(
   path: string,
   basename: string,
   links: string[],
-  properties: BaseFileInspection["properties"],
+  properties: BaseFileInspection["properties"]
 ): BaseFileInspection {
   return {
     ...file(path, basename, properties),
@@ -73,7 +73,7 @@ export function standardInspections(): BaseFileInspection[] {
         { name: "birthday", value: "2000-06-15" },
         { name: "due", value: "2026-08-01" },
         { name: "tags", value: ["book", "fiction"] },
-      ],
+      ]
     ),
     taggedFile(
       "Notes/Bravo.md",
@@ -88,7 +88,7 @@ export function standardInspections(): BaseFileInspection[] {
         { name: "birthday", value: "1995-03-20" },
         { name: "due", value: "2026-01-01" },
         { name: "tags", value: ["article", "fiction"] },
-      ],
+      ]
     ),
     taggedFile(
       "Notes/Charlie.md",
@@ -103,7 +103,7 @@ export function standardInspections(): BaseFileInspection[] {
         { name: "birthday", value: null },
         { name: "due", value: null },
         { name: "tags", value: [] },
-      ],
+      ]
     ),
     taggedFile(
       "Notes/Delta.md",
@@ -118,7 +118,7 @@ export function standardInspections(): BaseFileInspection[] {
         { name: "birthday", value: "2010-12-25" },
         { name: "due", value: "2027-06-30" },
         { name: "tags", value: ["book"] },
-      ],
+      ]
     ),
   ];
 }
@@ -126,7 +126,7 @@ export function standardInspections(): BaseFileInspection[] {
 export function query(
   yaml: string,
   inspections: BaseFileInspection[],
-  options?: { view?: string; context?: string },
+  options?: { view?: string; context?: string }
 ) {
   const base = parseBase("bases/test.base", yaml);
   return queryBase(base, inspections, options);
@@ -138,10 +138,9 @@ export function f(result: { rows: unknown[] }, name: string): unknown {
     | { data?: Record<string, unknown> }
     | Record<string, unknown>
     | undefined;
-  if (!row) return undefined;
+  if (!row) return;
   const data = "data" in row && row.data ? row.data : row;
   const formulaKey = `formula.${name}`;
   if (Object.hasOwn(data, formulaKey)) return data[formulaKey];
   if (Object.hasOwn(data, name)) return data[name];
-  return undefined;
 }

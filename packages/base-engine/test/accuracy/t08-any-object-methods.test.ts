@@ -23,7 +23,7 @@ describe("any type methods", () => {
         "      - file.name",
         "      - formula.T",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     expect(f(result, "T")).toBe(true);
   });
@@ -40,7 +40,7 @@ describe("any type methods", () => {
         "      - file.name",
         "      - formula.T",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     expect(f(result, "T")).toBe(true);
   });
@@ -57,7 +57,7 @@ describe("any type methods", () => {
         "      - file.name",
         "      - formula.T",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     expect(f(result, "T")).toBe(true);
   });
@@ -74,7 +74,7 @@ describe("any type methods", () => {
         "      - file.name",
         "      - formula.S",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     expect(f(result, "S")).toBe("123");
   });
@@ -98,7 +98,7 @@ describe("object methods", () => {
           { name: "title", value: "Test" },
           { name: "status", value: "active" },
         ]),
-      ],
+      ]
     );
     const keys = f(result, "K");
     expect(Array.isArray(keys)).toBe(true);
@@ -123,7 +123,7 @@ describe("object methods", () => {
           { name: "title", value: "Test" },
           { name: "price", value: 9.99 },
         ]),
-      ],
+      ]
     );
     const vals = f(result, "V");
     expect(Array.isArray(vals)).toBe(true);
@@ -143,7 +143,7 @@ describe("object methods", () => {
         "      - file.name",
         "      - formula.E",
       ].join("\n"),
-      [file("A.md", "A", [{ name: "title", value: "Test" }])],
+      [file("A.md", "A", [{ name: "title", value: "Test" }])]
     );
     expect(f(result, "E")).toBe(false);
   });

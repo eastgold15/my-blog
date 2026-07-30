@@ -33,7 +33,7 @@ describe("date + duration string", () => {
         "      - file.name",
         "      - formula.P",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     const val = f(result, "P");
     expect(val).toBeInstanceOf(Date);
@@ -52,7 +52,7 @@ describe("date + duration string", () => {
         "      - file.name",
         "      - formula.P",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     const val = f(result, "P");
     expect(val).toBeInstanceOf(Date);
@@ -71,7 +71,7 @@ describe("date + duration string", () => {
         "      - file.name",
         "      - formula.P",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     const val = f(result, "P");
     expect(val).toBeInstanceOf(Date);
@@ -90,7 +90,7 @@ describe("date + duration string", () => {
         "      - file.name",
         "      - formula.P",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     const val = f(result, "P");
     expect(val).toBeInstanceOf(Date);
@@ -109,7 +109,7 @@ describe("date + duration string", () => {
         "      - file.name",
         "      - formula.P",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     const val = f(result, "P");
     expect(val).toBeInstanceOf(Date);
@@ -128,7 +128,7 @@ describe("date + duration string", () => {
         "      - file.name",
         "      - formula.P",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     const val = f(result, "P");
     expect(val).toBeInstanceOf(Date);
@@ -147,7 +147,7 @@ describe("date + duration string", () => {
         "      - file.name",
         "      - formula.P",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     const val = f(result, "P");
     expect(val).toBeInstanceOf(Date);

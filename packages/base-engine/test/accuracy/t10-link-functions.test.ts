@@ -23,7 +23,7 @@ describe("link()", () => {
         "      - file.name",
         "      - formula.L",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     expect(f(result, "L")).toBe("[[Alpha]]");
   });
@@ -40,7 +40,7 @@ describe("link()", () => {
         "      - file.name",
         "      - formula.L",
       ].join("\n"),
-      [file("Test.md", "Test", [])],
+      [file("Test.md", "Test", [])]
     );
     expect(f(result, "L")).toBe("[[Alpha|Go to Alpha]]");
   });
@@ -59,7 +59,7 @@ describe("file.asLink()", () => {
         "      - file.name",
         "      - formula.A",
       ].join("\n"),
-      [file("Notes/Alpha.md", "Alpha", [])],
+      [file("Notes/Alpha.md", "Alpha", [])]
     );
     const val = f(result, "A");
     expect(typeof val).toBe("string");
@@ -84,7 +84,7 @@ describe("link.asFile()", () => {
         "      - file.name",
         "      - formula.A",
       ].join("\n"),
-      inspections,
+      inspections
     );
     const val = f(result, "A");
     expect(val).not.toBeNull();

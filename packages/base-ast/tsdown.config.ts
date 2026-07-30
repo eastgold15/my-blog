@@ -1,14 +1,14 @@
 import { defineConfig } from "tsdown";
 
 export default defineConfig({
-  entry: ["src/index.ts"],
-  format: "esm",
+  clean: true,
   dts: {
     compilerOptions: {
       composite: false,
     },
   },
+  entry: ["src/index.ts"],
+  format: "esm",
   sourcemap: true,
-  clean: true,
   target: "node25",
 });

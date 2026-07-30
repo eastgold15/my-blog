@@ -21,7 +21,7 @@ describe("Lexer: regex literals", () => {
   it("tokenizes /pattern/ as a regex token", () => {
     const tokens = lexExpression("/^A/");
     expect(tokens).toMatchObject([
-      { type: "regex", lexeme: "/^A/", value: { pattern: "^A", flags: "" } },
+      { lexeme: "/^A/", type: "regex", value: { flags: "", pattern: "^A" } },
       { type: "eof" },
     ]);
   });
@@ -30,9 +30,9 @@ describe("Lexer: regex literals", () => {
     const tokens = lexExpression("/alpha/i");
     expect(tokens).toMatchObject([
       {
-        type: "regex",
         lexeme: "/alpha/i",
-        value: { pattern: "alpha", flags: "i" },
+        type: "regex",
+        value: { flags: "i", pattern: "alpha" },
       },
       { type: "eof" },
     ]);
@@ -42,9 +42,9 @@ describe("Lexer: regex literals", () => {
     const tokens = lexExpression("/a\\/b/");
     expect(tokens).toMatchObject([
       {
-        type: "regex",
         lexeme: "/a\\/b/",
-        value: { pattern: "a\\/b", flags: "" },
+        type: "regex",
+        value: { flags: "", pattern: "a\\/b" },
       },
       { type: "eof" },
     ]);
@@ -54,9 +54,9 @@ describe("Lexer: regex literals", () => {
     const tokens = lexExpression("/[a/b]/");
     expect(tokens).toMatchObject([
       {
-        type: "regex",
         lexeme: "/[a/b]/",
-        value: { pattern: "[a/b]", flags: "" },
+        type: "regex",
+        value: { flags: "", pattern: "[a/b]" },
       },
       { type: "eof" },
     ]);
@@ -71,17 +71,17 @@ describe("Lexer: regex literals", () => {
   it("treats / as regex after an operator", () => {
     const tokens = lexExpression("x == /^A/");
     expect(tokens[2]).toMatchObject({
-      type: "regex",
       lexeme: "/^A/",
-      value: { pattern: "^A", flags: "" },
+      type: "regex",
+      value: { flags: "", pattern: "^A" },
     });
   });
 
   it("treats / as regex after opening paren", () => {
     const tokens = lexExpression("(/^A/)");
     expect(tokens[1]).toMatchObject({
-      type: "regex",
       lexeme: "/^A/",
+      type: "regex",
     });
   });
 
@@ -143,52 +143,52 @@ describe("Parser: array literal expressions", () => {
   it("parses [1, 2, 3] as an array expression", () => {
     const ast = parseExpression("[1, 2, 3]");
     expect(ast).toEqual({
-      kind: "array",
       elements: [
         { kind: "literal", value: 1 },
         { kind: "literal", value: 2 },
         { kind: "literal", value: 3 },
       ],
+      kind: "array",
     });
   });
 
   it("parses [] as an empty array", () => {
     const ast = parseExpression("[]");
-    expect(ast).toEqual({ kind: "array", elements: [] });
+    expect(ast).toEqual({ elements: [], kind: "array" });
   });
 
   it("parses nested array [[1, 2], 3]", () => {
     const ast = parseExpression("[[1, 2], 3]");
     expect(ast).toEqual({
-      kind: "array",
       elements: [
         {
-          kind: "array",
           elements: [
             { kind: "literal", value: 1 },
             { kind: "literal", value: 2 },
           ],
+          kind: "array",
         },
         { kind: "literal", value: 3 },
       ],
+      kind: "array",
     });
   });
 
   it("parses property[0] as index access", () => {
     const ast = parseExpression("property[0]");
     expect(ast).toEqual({
+      index: { kind: "literal", value: 0 },
       kind: "index",
       object: { kind: "identifier", name: "property" },
-      index: { kind: "literal", value: 0 },
     });
   });
 
   it('parses note["price"] as index access with string key', () => {
     const ast = parseExpression('note["price"]');
     expect(ast).toEqual({
+      index: { kind: "literal", value: "price" },
       kind: "index",
       object: { kind: "identifier", name: "note" },
-      index: { kind: "literal", value: "price" },
     });
   });
 });
@@ -196,23 +196,17 @@ describe("Parser: array literal expressions", () => {
 describe("Parser: regex literal expressions", () => {
   it("parses /^A/ as a regex expression", () => {
     const ast = parseExpression("/^A/");
-    expect(ast).toEqual({ kind: "regex", pattern: "^A", flags: "" });
+    expect(ast).toEqual({ flags: "", kind: "regex", pattern: "^A" });
   });
 
   it("parses /alpha/i as a regex expression with flags", () => {
     const ast = parseExpression("/alpha/i");
-    expect(ast).toEqual({ kind: "regex", pattern: "alpha", flags: "i" });
+    expect(ast).toEqual({ flags: "i", kind: "regex", pattern: "alpha" });
   });
 
   it("parses /^A/.matches(file.basename) as member access on regex", () => {
     const ast = parseExpression("/^A/.matches(file.basename)");
     expect(ast).toEqual({
-      kind: "call",
-      callee: {
-        kind: "member",
-        object: { kind: "regex", pattern: "^A", flags: "" },
-        property: "matches",
-      },
       args: [
         {
           kind: "member",
@@ -220,6 +214,12 @@ describe("Parser: regex literal expressions", () => {
           property: "basename",
         },
       ],
+      callee: {
+        kind: "member",
+        object: { flags: "", kind: "regex", pattern: "^A" },
+        property: "matches",
+      },
+      kind: "call",
     });
   });
 });
@@ -231,13 +231,13 @@ describe("Parser: list() single-argument semantics", () => {
     // But the AST is valid: list called with 3 args.
     const ast = parseExpression("list(3, 1, 2)");
     expect(ast).toEqual({
-      kind: "call",
-      callee: { kind: "identifier", name: "list" },
       args: [
         { kind: "literal", value: 3 },
         { kind: "literal", value: 1 },
         { kind: "literal", value: 2 },
       ],
+      callee: { kind: "identifier", name: "list" },
+      kind: "call",
     });
   });
 });
@@ -259,12 +259,12 @@ describe("YAML parser: groupBy", () => {
         "      direction: ASC",
         "    order:",
         "      - file.name",
-      ].join("\n"),
+      ].join("\n")
     );
 
     expect(base.views[0]?.groupBy).toEqual({
-      property: "status",
       direction: "ASC",
+      property: "status",
     });
   });
 
@@ -279,12 +279,12 @@ describe("YAML parser: groupBy", () => {
         "      property: priority",
         "    order:",
         "      - file.name",
-      ].join("\n"),
+      ].join("\n")
     );
 
     expect(base.views[0]?.groupBy).toEqual({
-      property: "priority",
       direction: "ASC",
+      property: "priority",
     });
   });
 
@@ -300,12 +300,12 @@ describe("YAML parser: groupBy", () => {
         "      direction: DESC",
         "    order:",
         "      - file.name",
-      ].join("\n"),
+      ].join("\n")
     );
 
     expect(base.views[0]?.groupBy).toEqual({
-      property: "priority",
       direction: "DESC",
+      property: "priority",
     });
   });
 });
@@ -320,7 +320,7 @@ describe("YAML parser: top-level summaries", () => {
         "views:",
         "  - type: table",
         "    name: Test",
-      ].join("\n"),
+      ].join("\n")
     );
 
     expect(base.summaries).toEqual({
@@ -331,7 +331,7 @@ describe("YAML parser: top-level summaries", () => {
   it("returns undefined summaries when not present", () => {
     const base = parseBase(
       "bases/no-sum.base",
-      ["views:", "  - type: table", "    name: Test"].join("\n"),
+      ["views:", "  - type: table", "    name: Test"].join("\n")
     );
 
     expect(base.summaries).toBeUndefined();
@@ -342,7 +342,7 @@ describe("YAML parser: validation", () => {
   it("reports errors for missing view name", () => {
     const base = parseBase(
       "bases/bad.base",
-      ["views:", "  - type: table"].join("\n"),
+      ["views:", "  - type: table"].join("\n")
     );
 
     const errors = validateBase(base);
@@ -352,7 +352,7 @@ describe("YAML parser: validation", () => {
   it("defaults missing view type to 'table' (no validation error)", () => {
     const base = parseBase(
       "bases/bad.base",
-      ["views:", "  - name: Test"].join("\n"),
+      ["views:", "  - name: Test"].join("\n")
     );
 
     expect(base.views[0]?.type).toBe("table");

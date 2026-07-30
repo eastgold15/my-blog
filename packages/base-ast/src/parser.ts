@@ -46,11 +46,11 @@ export function parseBase(path: string, source: string): BaseDefinition {
   }
 
   const base: BaseDefinition = {
-    path,
-    source: parsed,
-    properties: parseProperties(parsed.properties),
-    formulas: parseFormulas(parsed.formulas),
     filters: parsed.filters,
+    formulas: parseFormulas(parsed.formulas),
+    path,
+    properties: parseProperties(parsed.properties),
+    source: parsed,
     summaries: parseSummaries(parsed.summaries),
     views: parseViews(parsed.views),
   };
@@ -107,7 +107,7 @@ function parseFormulas(value: unknown): Record<string, string> {
 
 function parseSummaries(value: unknown): Record<string, string> | undefined {
   if (!isRecord(value)) {
-    return undefined;
+    return;
   }
 
   const summaries: Record<string, string> = {};
@@ -124,38 +124,38 @@ function parseViews(value: unknown): BaseView[] {
   }
 
   return value.filter(isRecord).map((view) => ({
-    type: stringValue(view.type) ?? "table",
-    name: stringValue(view.name) ?? "",
     filters: view.filters,
-    order: Array.isArray(view.order) ? view.order.map(String) : undefined,
-    sort: parseSort(view.sort),
-    limit: typeof view.limit === "number" ? view.limit : undefined,
     groupBy: parseGroupBy(view.groupBy),
-    summaries: isRecord(view.summaries) ? view.summaries : undefined,
-    requiresContext: false,
+    limit: typeof view.limit === "number" ? view.limit : undefined,
+    name: stringValue(view.name) ?? "",
+    order: Array.isArray(view.order) ? view.order.map(String) : undefined,
     raw: view,
+    requiresContext: false,
+    sort: parseSort(view.sort),
+    summaries: isRecord(view.summaries) ? view.summaries : undefined,
+    type: stringValue(view.type) ?? "table",
   }));
 }
 
 function parseGroupBy(value: unknown): BaseGroupBy | undefined {
   if (!isRecord(value)) {
-    return undefined;
+    return;
   }
 
   const property = stringValue(value.property);
   if (!property) {
-    return undefined;
+    return;
   }
 
   return {
-    property,
     direction: value.direction === "DESC" ? "DESC" : "ASC",
+    property,
   };
 }
 
 function parseSort(value: unknown): BaseSort[] | undefined {
   if (!Array.isArray(value)) {
-    return undefined;
+    return;
   }
 
   const sort = value.filter(isRecord).flatMap((item) => {
@@ -166,8 +166,8 @@ function parseSort(value: unknown): BaseSort[] | undefined {
 
     return [
       {
-        property,
         direction: item.direction === "DESC" ? "DESC" : "ASC",
+        property,
       } satisfies BaseSort,
     ];
   });
@@ -257,7 +257,7 @@ export function filterUsesThis(filters: unknown): boolean {
  * node with name "this".
  */
 export function formulasUsingThis(
-  formulas: Record<string, string>,
+  formulas: Record<string, string>
 ): Set<string> {
   const names = new Set<string>();
   for (const [name, source] of Object.entries(formulas)) {
@@ -284,7 +284,7 @@ export function formulasUsingThis(
  */
 export function viewRequiresContext(
   view: BaseView,
-  base: Pick<BaseDefinition, "filters" | "formulas">,
+  base: Pick<BaseDefinition, "filters" | "formulas">
 ): boolean {
   if (filterUsesThis(base.filters)) {
     return true;
@@ -306,7 +306,7 @@ export function viewRequiresContext(
  * Returns the base definition with `requiresContext` set on each view.
  */
 export function resolveContextRequirements(
-  base: BaseDefinition,
+  base: BaseDefinition
 ): BaseDefinition {
   return {
     ...base,

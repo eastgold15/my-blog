@@ -71,13 +71,13 @@ export async function getAllPosts(): Promise<BlogPost[]> {
       // 创建基本文章对象，确保路由可访问
       const slug = generateSlug(file.name, vaultDir);
       posts.push({
-        slug,
-        title: file.name.replace(/\.(md|mdx)$/, ""),
-        content: "",
-        excerpt: "内容加载中...",
-        date: new Date().toISOString(),
         category: "Uncategorized",
+        content: "",
+        date: new Date().toISOString(),
+        excerpt: "内容加载中...",
+        slug,
         tags: [],
+        title: file.name.replace(/\.(md|mdx)$/, ""),
         vaultDir,
       });
 
@@ -133,9 +133,9 @@ export async function getAllCategories(): Promise<BlogCategory[]> {
       existing.count++;
     } else {
       categoryMap.set(post.category, {
+        count: 1,
         name: post.category,
         slug: post.category.toLowerCase().replace(/\s+/g, "-"),
-        count: 1,
       });
     }
   }
@@ -163,7 +163,7 @@ export async function getPostNavigation(
   const currentIndex = posts.findIndex((p) => p.slug === currentSlug);
 
   return {
-    prev: currentIndex > 0 ? posts[currentIndex - 1] : undefined,
     next: currentIndex < posts.length - 1 ? posts[currentIndex + 1] : undefined,
+    prev: currentIndex > 0 ? posts[currentIndex - 1] : undefined,
   };
 }
