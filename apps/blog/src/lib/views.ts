@@ -15,6 +15,7 @@ import {
   type ParsedBase,
   parsePublishedBase,
 } from "./base-parser";
+import { generateSlug } from "./mdx";
 import { getAllMarkdownFiles, readVaultFile, syncVault } from "./vault-cache";
 
 /** 单篇笔记对外的类型(兼容 BlogPost) */
@@ -74,7 +75,7 @@ export function getAllPublishedPosts(): VaultPost[] {
       if (data.published !== true) continue;
       const filename = f.path.split("/").pop()!.replace(/\.md$/, "");
       const title = (data.title as string) ?? filename;
-      const slug = (data.slug as string) ?? filename;
+      const slug = (data.slug as string) ?? generateSlug(filename);
       posts.push({
         category: String(data["场景"] ?? "未分类"),
         data,

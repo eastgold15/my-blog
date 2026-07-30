@@ -72,21 +72,15 @@ export function calculateReadingTime(content: string): number {
 }
 
 /**
- * 从文件名和分类生成唯一的 slug
+ * 从文件名生成 slug(纯文件名,跟 views.ts 保持一致)
+ * 第二个参数保留但忽略——历史上曾用 category 做前缀,现统一
  */
-export function generateSlug(filename: string, category: string): string {
-  const baseName = filename
+export function generateSlug(filename: string, _category?: string): string {
+  return filename
     .replace(mdReg, "")
     .toLowerCase()
     .replace(/\s+/g, "-")
     .replace(/[^\w\-一-龥]/g, "");
-
-  const categorySlug = category
-    .toLowerCase()
-    .replace(/\s+/g, "-")
-    .replace(/[^\w\-一-龥]/g, "");
-
-  return `${categorySlug}-${baseName}`;
 }
 
 /**
