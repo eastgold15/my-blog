@@ -4,6 +4,7 @@
  */
 
 import type { BlogCategory, BlogPost, PostNavigationType } from "@/types/blog";
+import matter from "gray-matter";
 import { generateSlug, parseBlogPost } from "./mdx";
 import { processObsidianSyntax } from "./obsidian";
 
@@ -41,6 +42,12 @@ export async function getAllPosts(): Promise<BlogPost[]> {
 
     try {
       const content = cache.readVaultFile(file.path);
+
+      // 解析 frontmatter 检查 published
+      const { data: fm } = matter(content);
+      if (fm?.published !== true) {
+        continue; // 只发布 published: true 的笔记
+      }
 
       // 处理 Obsidian 语法（标签和块引用）
       const processedContent = processObsidianSyntax(content);
@@ -121,36 +128,21 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
 }
 
 /**
- * 获取所有分类
+ * 获取所有分类(已废弃:改用 views.published.base 驱动)
+ * @deprecated 请改用 getDimensions() from "./views"
  */
 export async function getAllCategories(): Promise<BlogCategory[]> {
-  const posts = await getAllPosts();
-  const categoryMap = new Map<string, BlogCategory>();
-
-  for (const post of posts) {
-    const existing = categoryMap.get(post.category);
-    if (existing) {
-      existing.count++;
-    } else {
-      categoryMap.set(post.category, {
-        count: 1,
-        name: post.category,
-        slug: post.category.toLowerCase().replace(/\s+/g, "-"),
-      });
-    }
-  }
-
-  return Array.from(categoryMap.values()).sort((a, b) => b.count - a.count);
+  return [];
 }
 
 /**
- * 根据分类获取文章
+ * 根据分类获取文章(已废弃)
+ * @deprecated 改用 URL query 筛选
  */
 export async function getPostsByCategory(
-  category: string
+  _category: string
 ): Promise<BlogPost[]> {
-  const posts = await getAllPosts();
-  return posts.filter((post) => post.category === category);
+  return [];
 }
 
 /**

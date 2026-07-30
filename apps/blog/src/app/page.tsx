@@ -1,17 +1,47 @@
 /**
  * 博客首页
- * 展示所有博客文章列表
+ * 数据驱动:可筛维度从 views.published.base 读
+ * 筛选交互:URL query,无 JS 也能用
  */
 
 import Link from "next/link";
 import { PostCard } from "@/components/blog/post-card";
-import { getAllCategories, getAllPosts } from "@/lib/posts";
+import { getAllPublishedPosts, getDimensions } from "@/lib/views";
 
-export default async function HomePage() {
-  const [posts, categories] = await Promise.all([
-    getAllPosts(),
-    getAllCategories(),
-  ]);
+type SearchParams = Promise<Record<string, string | string[] | undefined>>;
+
+export default async function HomePage(props: { searchParams: SearchParams }) {
+  const searchParams = await props.searchParams;
+  const allPosts = getAllPublishedPosts();
+  const dimensions = getDimensions();
+
+  // 解析 URL 中的筛选条件(支持多值,用 `,` 分隔)
+  const activeFilters: Record<string, string[]> = {};
+  for (const dim of dimensions) {
+    const raw = searchParams[dim.name];
+    if (raw == null) continue;
+    const values = (Array.isArray(raw) ? raw.join(",") : raw)
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    if (values.length > 0) activeFilters[dim.name] = values;
+  }
+
+  // 应用筛选(同维度内 OR,跨维度 AND)
+  const filteredPosts = allPosts.filter((post) => {
+    for (const [key, values] of Object.entries(activeFilters)) {
+      const field = post.data[key];
+      const fieldValues = Array.isArray(field)
+        ? field.map(String)
+        : field == null
+          ? []
+          : [String(field)];
+      if (!fieldValues.some((v) => values.includes(v))) {
+        return false;
+      }
+    }
+    return true;
+  });
 
   return (
     <div className="w-full px-4 py-12 sm:px-6 lg:px-8">
@@ -26,44 +56,77 @@ export default async function HomePage() {
           </p>
         </section>
 
-        {/* 分类导航 */}
+        {/* chip 筛选栏(从 base 动态生成) */}
         <section className="mb-12">
-          <h2 className="mb-4 font-semibold text-2xl text-gray-900 dark:text-white">
-            文章分类
-          </h2>
-          <div className="flex flex-wrap gap-3">
+          {dimensions.map((dim) => {
+            const active = activeFilters[dim.name] ?? [];
+            return (
+              <div className="mb-4" key={dim.name}>
+                <h3 className="mb-2 font-medium text-gray-700 text-sm dark:text-gray-300">
+                  {dim.displayName}
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {dim.values.map((value) => {
+                    const isActive = active.includes(value);
+                    // 计算新 URL:同维度切换 OR,跨维度合并
+                    const newValues = isActive
+                      ? active.filter((v) => v !== value)
+                      : [...active, value];
+                    const params = new URLSearchParams();
+                    for (const [k, vs] of Object.entries(activeFilters)) {
+                      if (k === dim.name) {
+                        if (newValues.length > 0) {
+                          params.set(k, newValues.join(","));
+                        }
+                      } else if (vs.length > 0) {
+                        params.set(k, vs.join(","));
+                      }
+                    }
+                    const href = params.toString()
+                      ? `/?${params.toString()}`
+                      : "/";
+                    return (
+                      <Link
+                        className={`rounded-full px-3 py-1 text-sm transition-colors ${
+                          isActive
+                            ? "bg-blue-500 text-white"
+                            : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                        }`}
+                        href={href}
+                        key={value}
+                      >
+                        {value}
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+          {Object.keys(activeFilters).length > 0 && (
             <Link
-              className="rounded-lg bg-gray-100 px-4 py-2 text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
-              href="/posts"
+              className="text-blue-500 text-sm hover:underline"
+              href="/"
             >
-              全部 ({posts.length})
+              清除全部筛选
             </Link>
-            {categories.map((category) => (
-              <Link
-                className="rounded-lg bg-gray-100 px-4 py-2 text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
-                href={`/posts?category=${category.slug}`}
-                key={category.slug}
-              >
-                {category.name} ({category.count})
-              </Link>
-            ))}
-          </div>
+          )}
         </section>
 
         {/* 文章列表 */}
         <section>
           <h2 className="mb-6 font-semibold text-2xl text-gray-900 dark:text-white">
-            最新文章
+            文章 ({filteredPosts.length}/{allPosts.length})
           </h2>
-          {posts.length === 0 ? (
+          {filteredPosts.length === 0 ? (
             <div className="py-12 text-center">
               <p className="text-gray-600 dark:text-gray-400">
-                暂无文章，敬请期待...
+                {allPosts.length === 0 ? "暂无文章" : "没有匹配的文章"}
               </p>
             </div>
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {posts.map((post) => (
+              {filteredPosts.map((post) => (
                 <PostCard key={post.slug} post={post} />
               ))}
             </div>
