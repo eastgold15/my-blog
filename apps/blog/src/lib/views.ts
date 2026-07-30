@@ -9,13 +9,13 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import matter from "gray-matter";
-import { getAllMarkdownFiles, readVaultFile, syncVault } from "./vault-cache";
 import {
   collectDimensionValues,
-  parsePublishedBase,
   type Dimension,
   type ParsedBase,
+  parsePublishedBase,
 } from "./base-parser";
+import { getAllMarkdownFiles, readVaultFile, syncVault } from "./vault-cache";
 
 /** 单篇笔记对外的类型(兼容 BlogPost) */
 export type VaultPost = {
@@ -34,17 +34,9 @@ export type VaultPost = {
 let postsCache: VaultPost[] | null = null;
 let schemaCache: ParsedBase | null = null;
 
-/** vault 根目录:优先 .vault-cache(云端统一),否则本地(开发直读) */
+/** vault 根目录:只走 .vault-cache(云端统一),没有就 sync */
 function getVaultRoot(): string {
-  const cached = join(process.cwd(), ".vault-cache");
-  if (existsSync(join(cached, "views.published.base"))) {
-    return cached;
-  }
-  // 兜底:本地 vault(只在 .vault-cache 还没同步时用)
-  if (existsSync("H:/main/knowledge_base/views.published.base")) {
-    return "H:/main/knowledge_base";
-  }
-  return cached;
+  return join(process.cwd(), ".vault-cache");
 }
 
 /** base 文件路径(约定 vault 根有 views.published.base) */
@@ -75,23 +67,25 @@ export function getAllPublishedPosts(): VaultPost[] {
   const posts: VaultPost[] = [];
   for (const f of getAllMarkdownFiles()) {
     try {
-      const raw = useCache ? readVaultFile(f.path) : readFileSync(join(root, f.path), "utf8");
+      const raw = useCache
+        ? readVaultFile(f.path)
+        : readFileSync(join(root, f.path), "utf8");
       const { data } = matter(raw);
       if (data.published !== true) continue;
       const filename = f.path.split("/").pop()!.replace(/\.md$/, "");
       const title = (data.title as string) ?? filename;
       const slug = (data.slug as string) ?? filename;
       posts.push({
-        slug,
-        title,
-        filePath: f.path,
-        data,
         category: String(data["场景"] ?? "未分类"),
+        data,
         date: String(
           data.date ?? data["date created"] ?? new Date().toISOString()
         ),
-        tags: Array.isArray(data.tags) ? (data.tags as string[]) : [],
         excerpt: String(data.excerpt ?? data.description ?? ""),
+        filePath: f.path,
+        slug,
+        tags: Array.isArray(data.tags) ? (data.tags as string[]) : [],
+        title,
       });
     } catch {
       // 跳过解析失败的文件

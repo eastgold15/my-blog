@@ -18,7 +18,6 @@ import { PostNavigation } from "@/components/blog/post-navigation";
 import { ChapterNav } from "@/components/content/chapter-nav";
 import { Code } from "@/components/content/code";
 import { TableOfContents } from "@/components/content/table-of-contents";
-import { config } from "@/configs/config";
 import { getAllPosts } from "@/lib/posts";
 import { generateTOC } from "@/lib/toc";
 import "highlight.js/styles/github-dark.css";
@@ -119,8 +118,14 @@ export default async function PostPage({
   }
 
   // 判断文章类型(用 series 优先,vaultDir 兜底)
-  const articleType = isArticle(post.vaultDir, post as unknown as Record<string, unknown>);
-  const chapterName = getChapterName(post.vaultDir, post as unknown as Record<string, unknown>);
+  const articleType = isArticle(
+    post.vaultDir,
+    post as unknown as Record<string, unknown>
+  );
+  const chapterName = getChapterName(
+    post.vaultDir,
+    post as unknown as Record<string, unknown>
+  );
 
   // 文章导航（上一篇/下一篇）
   const currentIndex = allPosts.findIndex(

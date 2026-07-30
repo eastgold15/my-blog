@@ -9,7 +9,8 @@
   "linter": {
     "rules": {
       "complexity": {
-        "noExcessiveCognitiveComplexity": "off"
+        "noExcessiveCognitiveComplexity": "off",
+        "useLiteralKeys": "off"
       },
       "performance": {
         "useTopLevelRegex": "off",
@@ -24,7 +25,8 @@
         "noIncrementDecrement": "off",
         "useDefaultSwitchClause": "off",
         "noParameterProperties": "off",
-        "useErrorCause": "off"
+        "useErrorCause": "off",
+        "noNonNullAssertion": "off"
       },
       "a11y": {
         "noSvgWithoutTitle": "off"

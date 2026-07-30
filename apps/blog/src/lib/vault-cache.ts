@@ -8,8 +8,6 @@
  * - 支持私有仓库(Authorization 头带 token)
  */
 
-import AdmZip from "adm-zip";
-import { Octokit } from "@octokit/rest";
 import {
   existsSync,
   mkdirSync,
@@ -21,12 +19,14 @@ import {
   writeFileSync,
 } from "node:fs";
 import { join } from "node:path";
+import { Octokit } from "@octokit/rest";
+import AdmZip from "adm-zip";
 import { config } from "@/configs/config";
 import type { NavItem } from "@/types/navigation";
 
 const CACHE_DIR = config.vault.cacheDir;
 const tempCachePath = `${CACHE_DIR}.tmp`;
-const lockPath = `${CACHE_DIR}.lock`;
+// const lockPath = `${CACHE_DIR}.lock`;
 
 // 并发锁:让多 worker 不会重复拉取
 let syncingPromise: Promise<void> | null = null;
@@ -46,39 +46,54 @@ async function syncFromGithub(): Promise<void> {
     return;
   }
 
-  console.log(`[vault-cache] 开始拉取 ${owner}/${repo}@${branch} (codeload zip)`);
+  console.log(
+    `[vault-cache] 开始拉取 ${owner}/${repo}@${branch} (codeload zip)`
+  );
 
   const octokit = new Octokit({ auth: token });
+  const log = (msg: string) =>
+    console.log(`[vault-cache] [${Date.now() - t0}ms] ${msg}`);
+  const t0 = Date.now();
+  log("octokit 已创建,开始调 repos.get...");
+
   // 拿 default branch 的最新 commit SHA(显式 SHA 比传 branch name 更可靠,
   // 避免 codeload 用过时的 cache)
   const { data: repoMeta } = await octokit.rest.repos.get({ owner, repo });
+  log(`repos.get 完成, default_branch=${repoMeta.default_branch}`);
+
   const { data: refData } = await octokit.rest.git.getRef({
     owner,
-    repo,
     ref: `heads/${repoMeta.default_branch}`,
+    repo,
   });
   const sha = refData.object.sha;
+  log(`getRef 完成, sha=${sha.slice(0, 7)}`);
 
   const archive = await octokit.rest.repos.downloadZipballArchive({
     owner,
-    repo,
     ref: sha,
+    repo,
   });
   const url = (archive as { url: string }).url;
+  log(`downloadZipballArchive 完成, url=${url.slice(0, 70)}...`);
 
   console.log(`[vault-cache] 下载 zip: ${url.slice(0, 80)}...`);
   const res = await fetch(url, {
     headers: { Authorization: `Bearer ${token}` },
   });
+  log(`fetch 完成, status=${res.status}`);
   if (!res.ok) {
     throw new Error(`zip 下载失败: HTTP ${res.status}`);
   }
   const buf = Buffer.from(await res.arrayBuffer());
-  console.log(`[vault-cache] 下载完成 (${(buf.length / 1024).toFixed(1)} KB),解压中...`);
+  log(
+    `arrayBuffer 读取完成, size=${(buf.length / 1024).toFixed(1)} KB,开始解压`
+  );
 
   const zip = new AdmZip(buf);
   const entries = zip.getEntries();
   const rootPrefix = entries[0]?.entryName.split("/")[0] ?? "";
+  log(`解压对象创建完成, entries=${entries.length}, root=${rootPrefix}`);
   if (!rootPrefix) {
     throw new Error("zip 结构异常,找不到根目录");
   }
@@ -107,7 +122,7 @@ async function syncFromGithub(): Promise<void> {
 /** 异步同步入口:并发安全(多 worker 共享同一个 promise) */
 export async function syncVault(): Promise<void> {
   if (syncingPromise) {
-    return syncingPromise;
+    return await syncingPromise;
   }
   syncingPromise = (async () => {
     try {
@@ -169,7 +184,9 @@ export function getAllMarkdownFiles(): VaultFile[] {
       // 派生 chapterDir:直接父目录名(剥数字前缀)
       const parentSegs = rel.split("/").slice(0, -1);
       const lastParent = parentSegs[parentSegs.length - 1];
-      const chapterDir = lastParent ? lastParent.replace(NUM_PREFIX_REGEX, "") : undefined;
+      const chapterDir = lastParent
+        ? lastParent.replace(NUM_PREFIX_REGEX, "")
+        : undefined;
       files.push({
         chapterDir,
         name,

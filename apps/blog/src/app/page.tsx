@@ -73,12 +73,14 @@ export default async function HomePage(props: { searchParams: SearchParams }) {
                       ? active.filter((v) => v !== value)
                       : [...active, value];
                     const params = new URLSearchParams();
+                    // 1. 先处理当前维度(关键:即使 activeFilters 里没这条,也要加)
+                    if (newValues.length > 0) {
+                      params.set(dim.name, newValues.join(","));
+                    }
+                    // 2. 再合并其他维度的已有筛选
                     for (const [k, vs] of Object.entries(activeFilters)) {
-                      if (k === dim.name) {
-                        if (newValues.length > 0) {
-                          params.set(k, newValues.join(","));
-                        }
-                      } else if (vs.length > 0) {
+                      if (k === dim.name) continue; // 上面已处理
+                      if (vs.length > 0) {
                         params.set(k, vs.join(","));
                       }
                     }
