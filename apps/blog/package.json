@@ -34,7 +34,7 @@
     "typescript": "^6.0.3",
     "ultracite": "7.9.3"
   },
-  "name": "my-blog",
+  "name": "blog",
   "workspaces": [
     "packages/*"
   ],
@@ -44,7 +44,7 @@
     "start": "npx serve@latest out",
     "lint": "biome check",
     "format": "biome format --write",
-    "typeCheck": "npx tsc --noEmit",
+    "check-types": "npx tsc --noEmit",
     "check": "ultracite check",
     "fix": "ultracite fix",
     "prepare": "lefthook install"
